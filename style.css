@@ -1,8 +1,13 @@
 body{
-    background-color: cornflowerblue;
+    background-image: url('/TicTacToe/bg1.png');
+    background-size: cover;
+    background-color: #89577C;
+    /* background-repeat: no-repeat; */
+    background-position: center;    
 }
 h1{
     text-align: center;
+    color: #EAE8FF;
 }
 .gamingArea{
     display: flex;
@@ -11,7 +16,8 @@ h1{
 .mainBox{
     display: flex;
     flex-direction: column;
-    width: 50%;
+    /* width: 50%; */
+    width: 50vw;
     aspect-ratio: 1/1;
     border-radius: 5%;
     
@@ -23,21 +29,35 @@ h1{
 }
 .nineBox{
     flex: 1;
-    border: 1px solid black;
+    border: 1px solid #FFF8E8;
+
     display: flex;
     justify-content: center;
     align-items: center;
     border-radius: 15%;
-    background-color: rgba(255, 255, 255, 0.3);
+    background-color: #023e8a4D;
 }
-.resultArea h3{
-    text-align: center;
+.resultArea{
+    display: flex;
+    flex-direction: column;
+    align-items: center;    
+}
+.restart{
+    color: #FFF8E8;
+    background-color: #EAE8FF4D;
+    border-radius: 10vh;
+    border: 2px solid #023e8a4D;
 }
 .logo{
-    font-size: 200%;
+    font-size: 10vw;
+    color: #FFF8E8;
+}
+#winner{
+    color: #EAE8FF;
 }
 footer{
     text-align: center;
     color: aliceblue;
-    background-color: black;
+    background-color: #D6C3AE4D;
+    border-radius: 10vh;
 }
