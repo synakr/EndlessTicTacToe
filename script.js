@@ -1,4 +1,7 @@
-let clr = "red";
+let clr = "blue";
+let cross = `<i class="fa-regular fa-circle-xmark logo"></i>`;
+let right = `<i class="fa-regular fa-circle-check logo"></i>`;
+let win = false;
 const queue = [];
 const player1 = [];
 const player2 = [];
@@ -10,7 +13,7 @@ const winArray = [
     [0,3,6],
     [1,4,7],
     [2,5,8],
-    [1,4,8],
+    [0,4,8],
     [2,4,6]
 ];
 
@@ -28,30 +31,46 @@ function checkWin(playerArray){
 const boxes = document.querySelectorAll(".nineBox"); 
 boxes.forEach((box, index) => {
     box.addEventListener("click", () => {
+        //if already won or the box is already clicked then no more inputs
+        if(queue.includes(index) || win) return;
+
         box.style.backgroundColor = clr;
+        queue.push(index);
 
         //push the element and check for win
         if(clr === "blue"){
             player1.push(index);
             if(checkWin(player1)){
-                console.log("player 1 won");
+                document.querySelector("#winner").innerText = "Player1 Won";
+                win = true;
                 return;
             }
         }
         else{
             player2.push(index);
             if (checkWin(player2)){
-                console.log("player 2 won");
+                document.querySelector("#winner").innerText = "Player2 Won";
+                win = true;
                 return;
             }
         }
 
         clr = toggleClr(clr);
 
-        queue.push(index);
-        console.log(queue);
-        console.log("player1 ", player1);
-        console.log("player2 ",player2);
+        //console.log(queue.length);
+        // console.log("player1 ", player1);
+        // console.log("player2 ",player2);
+
+        //check for tie
+        if(queue.length === 9){
+            let idx = queue.shift();
+            boxes[idx].style.backgroundColor = "pink";
+            idx = queue.shift();
+            boxes[idx].style.backgroundColor = "pink";
+
+            player1.shift();
+            player2.shift();
+        }
     });
 });
 
