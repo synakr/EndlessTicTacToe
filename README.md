@@ -1,7 +1,8 @@
 # Endless Tic Tac Toe
 Play Tic Tac Toe like never before — with infinite possibilities, tiebreakers, custom colors, and more!
 
-* 🔗 Live Demo *
+🔗 Live Demo
+[Play the Game](https://synakr.github.io/EndlessTicTacToe/)
 
 # Features
 🎮 Endless gameplay – play beyond traditional 3x3 grid rules
