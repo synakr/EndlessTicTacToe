@@ -1,6 +1,8 @@
-let clr = "blue";
-let cross = `<i class="fa-regular fa-circle-xmark logo"></i>`;
-let right = `<i class="fa-regular fa-circle-check logo"></i>`;
+const clr1 = `#B75E77`; //player 1, shade of red
+const clr2 = `#B0D7FF`; //player 2, shade of blue
+let clr = clr2;
+let cross = `<i class="fa-solid fa-xmark logo"></i>`; //use with clr 2
+let circle = `<i class="fa-regular fa-circle logo"></i>`; //use with clr 1
 let win = false;
 const queue = [];
 const player1 = [];
@@ -18,12 +20,36 @@ const winArray = [
 ];
 
 function toggleClr(clr){
-    if(clr === "blue") return "red";
-    else return "blue";
+    if(clr === clr2) return clr1;
+    else return clr2;
 }
 
+//this function return an array
 function checkWin(playerArray){
-    return winArray.some((row) => row.every(x => playerArray.includes(x)));
+    let winRow = [];
+    //return winArray.some((row) => row.every(x => playerArray.includes(x)));
+    winArray.some(row => {
+        if(row.every(x => playerArray.includes(x))){
+            winRow = row;
+            return true;
+        }
+        else return false;
+    });
+
+    return winRow;
+}
+
+function glowBox(array){
+    array.forEach((i, idx) => {
+        let clr = boxes[i].style.backgroundColor;
+        boxes[i].style.transition = "background-color 1s";
+        setTimeout(()=> {
+            boxes[i].style.backgroundColor = "pink";
+            setTimeout(() => {
+                boxes[i].style.backgroundColor = clr;
+            }, 500);
+        }, idx * 500);
+    });
 }
 
 //create a fnction that retuens the box/ box index that is clikcked
@@ -38,18 +64,26 @@ boxes.forEach((box, index) => {
         queue.push(index);
 
         //push the element and check for win
-        if(clr === "blue"){
+        if(clr === clr2){
+            box.innerHTML = cross;
             player1.push(index);
-            if(checkWin(player1)){
+
+            let tempRow = checkWin(player1);
+            if(tempRow.length == 3){
                 document.querySelector("#winner").innerText = "Player1 Won";
+                glowBox(tempRow);
                 win = true;
                 return;
             }
         }
         else{
+            box.innerHTML = circle;
             player2.push(index);
-            if (checkWin(player2)){
+
+            let tempRow = checkWin(player2);
+            if (tempRow.length == 3){
                 document.querySelector("#winner").innerText = "Player2 Won";
+                glowBox(tempRow);
                 win = true;
                 return;
             }
@@ -64,9 +98,11 @@ boxes.forEach((box, index) => {
         //check for tie
         if(queue.length === 9){
             let idx = queue.shift();
-            boxes[idx].style.backgroundColor = "pink";
+            boxes[idx].style.backgroundColor = "#023e8a4D";
+            boxes[idx].innerHTML = "";
             idx = queue.shift();
-            boxes[idx].style.backgroundColor = "pink";
+            boxes[idx].style.backgroundColor = "#023e8a4D";
+            boxes[idx].innerHTML = "";
 
             player1.shift();
             player2.shift();
@@ -74,3 +110,8 @@ boxes.forEach((box, index) => {
     });
 });
 
+let btn = document.querySelector(".restart");
+btn.addEventListener("click", ()=>{
+    btn.style.backgroundColor = "#89577C";
+    location.reload();
+});
