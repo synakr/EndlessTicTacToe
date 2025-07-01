@@ -144,7 +144,7 @@ body {
 
 @keyframes landTails {
     0% { transform: rotateY(1080deg) scale(1.2); }
-    100% { transform: rotateY(180deg) scale(1); } /* Land on the "other" side */
+    100% { transform: rotateY(0deg) scale(1); } /* Changed from 180deg to prevent text mirroring */
 }
 
 /* Footer styling from main page, ensure consistency */
