@@ -1,117 +1,142 @@
-const clr1 = `#B75E77`; //player 1, shade of red
-const clr2 = `#B0D7FF`; //player 2, shade of blue
-let clr = clr2;
-let cross = `<i class="fa-solid fa-xmark logo"></i>`; //use with clr 2
-let circle = `<i class="fa-regular fa-circle logo"></i>`; //use with clr 1
+// Player 1 (uses Circle symbol) is associated with clr1 (red-ish)
+// Player 2 (uses Cross symbol) is associated with clr2 (blue-ish)
+const clr1 = `#B75E77`;
+const clr2 = `#B0D7FF`;
+
+let currentPlayerColor;
+let currentPlayerSymbol;
+let currentTurnMessageElement; // To display whose turn it is / winner
+
+let cross = `<i class="fa-solid fa-xmark logo"></i>`; // Symbol for Player 2
+let circle = `<i class="fa-regular fa-circle logo"></i>`; // Symbol for Player 1
 let win = false;
-const queue = [];
-const player1 = [];
-const player2 = [];
+const queue = []; // Stores {index, playerSymbol} objects
+const player1Moves = []; // Stores box indices clicked by Player 1 (Circle)
+const player2Moves = []; // Stores box indices clicked by Player 2 (Cross)
 
 const winArray = [
-    [0,1,2],
-    [3,4,5],
-    [6,7,8],
-    [0,3,6],
-    [1,4,7],
-    [2,5,8],
-    [0,4,8],
-    [2,4,6]
+    [0,1,2], [3,4,5], [6,7,8], // rows
+    [0,3,6], [1,4,7], [2,5,8], // columns
+    [0,4,8], [2,4,6]           // diagonals
 ];
 
-function toggleClr(clr){
-    if(clr === clr2) return clr1;
-    else return clr2;
-}
-
-//this function return an array
-function checkWin(playerArray){
+// Function to check for a win
+function checkWin(playerMovesArray) {
     let winRow = [];
-    //return winArray.some((row) => row.every(x => playerArray.includes(x)));
-    winArray.some(row => {
-        if(row.every(x => playerArray.includes(x))){
-            winRow = row;
-            return true;
+    winArray.some(combination => {
+        if (combination.every(index => playerMovesArray.includes(index))) {
+            winRow = combination;
+            return true; // Exit .some() loop
         }
-        else return false;
+        return false;
     });
-
-    return winRow;
+    return winRow; // Returns the winning combination or an empty array
 }
 
-function glowBox(array){
-    array.forEach((i, idx) => {
-        let clr = boxes[i].style.backgroundColor;
-        boxes[i].style.transition = "background-color 1s";
-        setTimeout(()=> {
-            boxes[i].style.backgroundColor = "pink";
+// Function to make winning boxes glow
+function glowBox(combination) {
+    combination.forEach((i, idx) => {
+        let originalColor = boxes[i].style.backgroundColor; // Should ideally get actual original, not current
+        boxes[i].style.transition = "background-color 0.2s";
+        setTimeout(() => {
+            boxes[i].style.backgroundColor = "pink"; // Glow color
             setTimeout(() => {
-                boxes[i].style.backgroundColor = clr;
-            }, 500);
-        }, idx * 500);
+                boxes[i].style.backgroundColor = originalColor; // Revert or set to a specific post-glow color
+            }, 200);
+        }, idx * 200);
     });
 }
 
-//create a fnction that retuens the box/ box index that is clikcked
-//boxes is an array of all the 9 boxes
-const boxes = document.querySelectorAll(".nineBox"); 
+const boxes = document.querySelectorAll(".nineBox");
+
 boxes.forEach((box, index) => {
     box.addEventListener("click", () => {
-        //if already won or the box is already clicked then no more inputs
-        if(queue.includes(index) || win) return;
-
-        box.style.backgroundColor = clr;
-        queue.push(index);
-
-        //push the element and check for win
-        if(clr === clr2){
-            box.innerHTML = cross;
-            player1.push(index);
-
-            let tempRow = checkWin(player1);
-            if(tempRow.length == 3){
-                document.querySelector("#winner").innerText = "Player1 Won";
-                glowBox(tempRow);
-                win = true;
-                return;
-            }
-        }
-        else{
-            box.innerHTML = circle;
-            player2.push(index);
-
-            let tempRow = checkWin(player2);
-            if (tempRow.length == 3){
-                document.querySelector("#winner").innerText = "Player2 Won";
-                glowBox(tempRow);
-                win = true;
-                return;
-            }
+        if (win || box.innerHTML !== "") { // If game won or box already taken
+            return;
         }
 
-        clr = toggleClr(clr);
+        box.style.backgroundColor = currentPlayerColor;
+        box.innerHTML = currentPlayerSymbol;
+        queue.push({ index: index, symbol: currentPlayerSymbol }); // Store index and who played
 
-        //console.log(queue.length);
-        // console.log("player1 ", player1);
-        // console.log("player2 ",player2);
+        let currentPlayerMoves;
+        let winnerName;
 
-        //check for tie
-        if(queue.length === 9){
-            let idx = queue.shift();
-            boxes[idx].style.backgroundColor = "#023e8a4D";
-            boxes[idx].innerHTML = "";
-            idx = queue.shift();
-            boxes[idx].style.backgroundColor = "#023e8a4D";
-            boxes[idx].innerHTML = "";
+        if (currentPlayerSymbol === circle) { // Player 1's move
+            player1Moves.push(index);
+            currentPlayerMoves = player1Moves;
+            winnerName = "Player 1 (O)";
+        } else { // Player 2's move
+            player2Moves.push(index);
+            currentPlayerMoves = player2Moves;
+            winnerName = "Player 2 (X)";
+        }
 
-            player1.shift();
-            player2.shift();
+        let winningCombination = checkWin(currentPlayerMoves);
+        if (winningCombination.length > 0) {
+            win = true;
+            currentTurnMessageElement.innerText = `${winnerName} Won!`;
+            glowBox(winningCombination);
+            return; // Game over
+        }
+
+        // Switch turns
+        if (currentPlayerSymbol === circle) {
+            currentPlayerColor = clr2;
+            currentPlayerSymbol = cross;
+            currentTurnMessageElement.innerText = "Player 2's Turn (X)";
+        } else {
+            currentPlayerColor = clr1;
+            currentPlayerSymbol = circle;
+            currentTurnMessageElement.innerText = "Player 1's Turn (O)";
+        }
+
+        // Endless mode: If board is full, remove oldest moves
+        if (queue.length >= 9) { // Using >= in case it ever exceeds 9 due to some bug
+            const removed1 = queue.shift();
+            boxes[removed1.index].style.backgroundColor = "#023e8a4D"; // Reset color
+            boxes[removed1.index].innerHTML = "";
+            if (removed1.symbol === circle) player1Moves.shift(); else player2Moves.shift();
+
+            // Only remove a second one if still full (maintains 7 pieces on board for "endless")
+            if (queue.length >= 8) { // Check if it's still "full enough" to remove another
+                 const removed2 = queue.shift();
+                 boxes[removed2.index].style.backgroundColor = "#023e8a4D"; // Reset color
+                 boxes[removed2.index].innerHTML = "";
+                 if (removed2.symbol === circle) player1Moves.shift(); else player2Moves.shift();
+            }
+        }
+         if (!win && queue.length === 9 && checkWin(player1Moves).length === 0 && checkWin(player2Moves).length === 0) {
+            // This condition is tricky with the endless queue.
+            // A true "tie" (board full, no winner) is less likely in endless mode unless win check is exhaustive after each removal.
+            // For now, if queue is full and no one has won yet, it's effectively a rolling state, not a hard tie.
+            // The currentTurnMessageElement will show whose turn it is.
         }
     });
 });
 
-let btn = document.querySelector(".restart");
-btn.addEventListener("click", ()=>{
-    btn.style.backgroundColor = "#89577C";
-    location.reload();
+document.addEventListener('DOMContentLoaded', () => {
+    const gameDifficulty = localStorage.getItem('gameDifficulty') || 'easy';
+    const startingPlayerName = localStorage.getItem('startingPlayer');
+
+    console.log(`Game difficulty: ${gameDifficulty}`);
+    currentTurnMessageElement = document.querySelector("#winner");
+
+    if (startingPlayerName === 'Player 1') {
+        currentPlayerColor = clr1;
+        currentPlayerSymbol = circle;
+        currentTurnMessageElement.innerText = "Player 1's Turn (O)";
+    } else { // Default to Player 2 if no setting or "Player 2"
+        currentPlayerColor = clr2;
+        currentPlayerSymbol = cross;
+        currentTurnMessageElement.innerText = "Player 2's Turn (X)";
+    }
+    // localStorage.removeItem('gameDifficulty'); // Optional: clear after use
+    // localStorage.removeItem('startingPlayer');
+});
+
+const restartButton = document.querySelector(".restart");
+restartButton.addEventListener("click", ()=>{
+    restartButton.style.backgroundColor = "#89577C"; // Original click feedback
+    window.location.href = 'pregame.html'; // Go to pregame page
 });

@@ -1,0 +1,40 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Game Setup - EndlessTTT</title>
+    <link rel="stylesheet" href="style.css"> <link rel="stylesheet" href="pregame.css">
+</head>
+<body>
+    <div class="setup-container">
+        <h1>Game Setup</h1>
+
+        <div class="options-group">
+            <h2>Select Difficulty</h2>
+            <div class="difficulty-options">
+                <label><input type="radio" name="difficulty" value="easy" checked> Easy</label>
+                <label><input type="radio" name="difficulty" value="medium"> Medium</label>
+                <label><input type="radio" name="difficulty" value="hard"> Hard</label>
+            </div>
+        </div>
+
+        <div class="options-group">
+            <h2>First Move</h2>
+            <button id="tossButton">Toss Coin!</button>
+            <div id="tossResult" class="toss-result-display" style="display: none;">
+                <p id="tossMessage"></p>
+                <span id="coin"></span>
+            </div>
+        </div>
+
+        <button id="startGameButton" class="start-button" disabled>Start Game</button>
+    </div>
+
+    <footer>
+        Made with Love 	&#x2661; by Sayan
+    </footer>
+
+    <script src="pregame.js"></script>
+</body>
+</html>
