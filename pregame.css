@@ -1,0 +1,159 @@
+body {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    min-height: 100vh;
+    font-family: Arial, sans-serif;
+    color: #EAE8FF; /* Light text color from main style */
+}
+
+.setup-container {
+    background-color: rgba(2, 62, 138, 0.6); /* Semi-transparent dark blue from main style */
+    padding: 30px 40px;
+    border-radius: 15px;
+    box-shadow: 0 8px 16px rgba(0, 0, 0, 0.3);
+    text-align: center;
+    width: 90%;
+    max-width: 500px;
+}
+
+.setup-container h1 {
+    color: #EAE8FF; /* Consistent with main page h1 */
+    margin-bottom: 25px;
+}
+
+.options-group {
+    margin-bottom: 30px;
+}
+
+.options-group h2 {
+    color: #B0D7FF; /* Lighter blue for subheadings */
+    margin-bottom: 15px;
+    font-size: 1.5em;
+}
+
+.difficulty-options label {
+    margin-right: 15px;
+    font-size: 1.1em;
+    cursor: pointer;
+    display: inline-block;
+    padding: 5px 10px;
+    border-radius: 5px;
+    transition: background-color 0.3s;
+}
+
+.difficulty-options input[type="radio"] {
+    margin-right: 5px;
+    vertical-align: middle;
+}
+
+.difficulty-options label:hover {
+    background-color: rgba(176, 215, 255, 0.2); /* Light hover effect */
+}
+
+#tossButton, .start-button {
+    background-color: #B75E77; /* Player 1 color - can be themed */
+    color: #FFF8E8;
+    padding: 12px 25px;
+    border: none;
+    border-radius: 25px; /* More rounded than main game restart */
+    font-size: 1.1em;
+    cursor: pointer;
+    transition: background-color 0.3s, transform 0.2s;
+    box-shadow: 0 4px 8px rgba(0,0,0,0.2);
+}
+
+#tossButton:hover, .start-button:hover {
+    background-color: #a14e65; /* Darker shade on hover */
+    transform: translateY(-2px);
+}
+
+#tossButton:disabled {
+    background-color: #888; /* Greyed out when disabled */
+    cursor: not-allowed;
+    transform: none;
+    box-shadow: none;
+}
+
+.start-button:disabled {
+    background-color: #777;
+    color: #ccc;
+    cursor: not-allowed;
+    transform: none;
+    box-shadow: none;
+}
+
+
+.toss-result-display {
+    margin-top: 20px;
+    padding: 15px;
+    background-color: rgba(0,0,0,0.2);
+    border-radius: 10px;
+}
+
+.toss-result-display p {
+    margin: 0 0 10px 0;
+    font-size: 1.3em;
+    font-weight: bold;
+    color: #FFF8E8;
+}
+
+#coin {
+    display: inline-block;
+    width: 50px;
+    height: 50px;
+    line-height: 50px;
+    border-radius: 50%;
+    background-color: #FFD700; /* Gold coin */
+    color: #444;
+    font-weight: bold;
+    font-size: 1.2em;
+    text-align: center;
+    border: 3px solid #DAA520; /* Darker gold border */
+    box-shadow: 0 2px 4px rgba(0,0,0,0.2);
+}
+
+#coin.tossing {
+    animation: spin 1.5s linear infinite;
+}
+
+#coin.heads {
+    background-color: #B0D7FF; /* Player 2 (blue) color for P1 (Heads) */
+    color: #000;
+    border-color: #8ab0d1;
+    animation: landHeads 0.5s forwards;
+}
+
+#coin.tails {
+    background-color: #B75E77; /* Player 1 (red) color for P2 (Tails) */
+    color: #fff;
+    border-color: #8c4a5e;
+    animation: landTails 0.5s forwards;
+}
+
+@keyframes spin {
+    0% { transform: rotateY(0deg); }
+    100% { transform: rotateY(1080deg); } /* Multiple spins */
+}
+
+@keyframes landHeads {
+    0% { transform: rotateY(1080deg) scale(1.2); }
+    100% { transform: rotateY(0deg) scale(1); }
+}
+
+@keyframes landTails {
+    0% { transform: rotateY(1080deg) scale(1.2); }
+    100% { transform: rotateY(0deg) scale(1); } /* Changed from 180deg to prevent text mirroring */
+}
+
+/* Footer styling from main page, ensure consistency */
+footer {
+    margin-top: 30px; /* Add some space above the footer */
+    text-align: center;
+    color: aliceblue;
+    background-color: #D6C3AE4D;
+    border-radius: 10vh;
+    padding: 10px 20px;
+    font-size: 0.9em;
+}
