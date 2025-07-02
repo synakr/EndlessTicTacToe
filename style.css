@@ -5,19 +5,20 @@ body{
     /* background-repeat: no-repeat; */
     background-position: center;    
 }
-h1{
+h1, h3{
     text-align: center;
     color: #EAE8FF;
 }
 .gamingArea{
     display: flex;
     justify-content: center;
+    /* height: 80vh; */
 }
 .mainBox{
     display: flex;
     flex-direction: column;
     /* width: 50%; */
-    width: 50vw;
+    width: min(95vmin, 500px);
     aspect-ratio: 1/1;
     border-radius: 5%;
     
@@ -49,7 +50,6 @@ h1{
     border: 2px solid #023e8a4D;
 }
 .logo{
-    font-size: 10vw;
     color: #FFF8E8;
 }
 #winner{
@@ -60,4 +60,9 @@ footer{
     color: aliceblue;
     background-color: #D6C3AE4D;
     border-radius: 10vh;
+}
+@media (max-width: 600px) {
+    .mainBox {
+        width: 95vmin;
+    }
 }
