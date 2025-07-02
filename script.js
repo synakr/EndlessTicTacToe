@@ -2,13 +2,13 @@ const p1 = localStorage.getItem("player1");
 const p2 = localStorage.getItem("player2");
 const tieVal = localStorage.getItem("tieBreaker");
 
-document.querySelector("h3").innerText = `✖ : ${p1}  |  ◯: ${p2};`
+document.querySelector("h3").innerText = `✖ : ${p1}  |  ◯ : ${p2};`
 
 const clr1 = `#B75E77`; //player 1, shade of red
 const clr2 = `#B0D7FF`; //player 2, shade of blue
 let clr = clr2;
-let cross = `<i class="fa-solid fa-xmark logo" style="font-size: 7vw;"></i>`; //use with clr 2
-let circle = `<i class="fa-regular fa-circle logo" style="font-size: 6vw;"></i>`; //use with clr 1
+let cross = `<i class="fa-solid fa-xmark logo" style="font-size: 2em;"></i>`; //use with clr 2
+let circle = `<i class="fa-regular fa-circle logo" style="font-size: 1.5em;"></i>`; //use with clr 1
 let win = false;
 const queue = [];
 const player1 = [];
