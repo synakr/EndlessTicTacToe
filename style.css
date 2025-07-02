@@ -28,15 +28,19 @@ h1, h3{
     flex-direction: row;
     flex: 1;
 }
-.nineBox{
+.nineBox {
     flex: 1;
     border: 1px solid #FFF8E8;
-
     display: flex;
     justify-content: center;
     align-items: center;
     border-radius: 15%;
     background-color: #023e8a4D;
+    font-size: 6vmin; /* controls icon size */
+}
+.logo {
+    /* font-size: 1em; */
+    color: #FFF8E8;
 }
 .resultArea{
     display: flex;
@@ -48,9 +52,6 @@ h1, h3{
     background-color: #EAE8FF4D;
     border-radius: 10vh;
     border: 2px solid #023e8a4D;
-}
-.logo{
-    color: #FFF8E8;
 }
 #winner{
     color: #EAE8FF;
@@ -65,4 +66,7 @@ footer{
     .mainBox {
         width: 95vmin;
     }
+    /* .nineBox{
+        font-size: 8vw;
+    } */
 }
