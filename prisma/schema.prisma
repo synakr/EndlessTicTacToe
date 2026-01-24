@@ -1,0 +1,70 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+model Profile {
+  id        String   @id
+  email     String   @unique
+  createdAt DateTime @default(now())
+
+  players GamePlayer[]
+}
+
+model Game {
+  id          String     @id @default(uuid())
+  roomCode    String     @unique
+  mode        GameMode
+  boardSize   Int
+  status      GameStatus
+  currentTurn String
+  createdAt   DateTime   @default(now())
+
+  players GamePlayer[]
+  moves   Move[]
+}
+
+model GamePlayer {
+  id       String     @id @default(uuid())
+  gameId   String
+  userId   String?
+  symbol   String
+  type     PlayerType
+  joinedAt DateTime   @default(now())
+
+  game Game     @relation(fields: [gameId], references: [id])
+  user Profile? @relation(fields: [userId], references: [id])
+}
+
+model Move {
+  id        String   @id @default(uuid())
+  gameId    String
+  userId    String
+  row       Int
+  col       Int
+  moveNo    Int
+  createdAt DateTime @default(now())
+
+  game Game @relation(fields: [gameId], references: [id])
+}
+
+enum GameMode {
+  MULTI
+  AI
+  LOCAL
+}
+
+enum PlayerType {
+  HUMAN
+  AI
+}
+
+enum GameStatus {
+  waiting
+  active
+  finished
+}
