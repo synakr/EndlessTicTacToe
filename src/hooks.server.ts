@@ -1,22 +1,33 @@
 import type { Handle } from '@sveltejs/kit';
 import { PUBLIC_SUPABASE_URL, PUBLIC_SUPABASE_ANON_KEY } from '$env/static/public';
-import { createClient } from '@supabase/supabase-js';
+import { createServerClient } from '@supabase/ssr';
 
 export const handle: Handle = async ({ event, resolve }) => {
-	const supabase = createClient(PUBLIC_SUPABASE_URL!, PUBLIC_SUPABASE_ANON_KEY!);
-	console.log('HOOK EXECUTED');
+	const supabase = createServerClient(PUBLIC_SUPABASE_URL!, PUBLIC_SUPABASE_ANON_KEY!, {
+		cookies: {
+			get: (key) => event.cookies.get(key),
 
-	// Get the access token from the Authorization header or cookie
-	const authHeader = event.request.headers.get('Authorization');
-	const token = authHeader?.replace('Bearer ', '') || event.cookies.get('access_token');
+			set: (key, value, options) =>
+				event.cookies.set(key, value, {
+					path: '/',
+					...options
+				}),
 
-	if (token) {
-		// Set the session with the token
-		const { data } = await supabase.auth.getUser(token);
-		event.locals.user = data.user ?? null;
-	} else {
-		event.locals.user = null;
-	}
+			remove: (key, options) =>
+				event.cookies.delete(key, {
+					path: '/',
+					...options
+				})
+		}
+	});
+
+	// LET SUPABASE HANDLE SESSION — NO MANUAL TOKENS
+	const {
+		data: { user }
+	} = await supabase.auth.getUser();
+
+	event.locals.supabase = supabase;
+	event.locals.user = user ?? null;
 
 	return resolve(event);
 };

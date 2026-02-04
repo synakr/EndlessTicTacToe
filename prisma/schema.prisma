@@ -9,6 +9,7 @@ datasource db {
 
 model Profile {
   id        String   @id
+  username  String?  @unique
   email     String   @unique
   createdAt DateTime @default(now())
 
@@ -16,34 +17,39 @@ model Profile {
 }
 
 model Game {
-  id          String     @id @default(uuid())
-  roomCode    String     @unique
-  mode        GameMode
-  boardSize   Int
-  status      GameStatus
-  currentTurn String
-  createdAt   DateTime   @default(now())
+  id       String   @id @default(uuid())
+  roomCode String   @unique
+  mode     GameMode
+
+  boardSize  Int @default(3)
+  tieBreaker Int @default(3)
+
+  status      GameStatus   @default(waiting)
+  currentTurn PlayerSymbol
+
+  createdAt DateTime @default(now())
 
   players GamePlayer[]
   moves   Move[]
 }
 
 model GamePlayer {
-  id       String     @id @default(uuid())
+  id       String       @id @default(uuid())
   gameId   String
   userId   String?
-  symbol   String
-  type     PlayerType
-  joinedAt DateTime   @default(now())
+  symbol   PlayerSymbol
+  joinedAt DateTime     @default(now())
 
   game Game     @relation(fields: [gameId], references: [id])
   user Profile? @relation(fields: [userId], references: [id])
+
+  @@unique([gameId, userId])
 }
 
 model Move {
   id        String   @id @default(uuid())
   gameId    String
-  userId    String
+  userId    String?
   row       Int
   col       Int
   moveNo    Int
@@ -53,18 +59,18 @@ model Move {
 }
 
 enum GameMode {
-  MULTI
-  AI
-  LOCAL
-}
-
-enum PlayerType {
-  HUMAN
-  AI
+  MULTI //MULTIPLYAER
+  AI //VS COMPUTER
+  DEVICE //OFFLINE
 }
 
 enum GameStatus {
   waiting
   active
   finished
+}
+
+enum PlayerSymbol {
+  X
+  O
 }

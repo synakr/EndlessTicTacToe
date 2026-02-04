@@ -7,7 +7,8 @@ declare global {
 	namespace App {
 		// interface Error {}
 		interface Locals {
-			user: User | null;
+			supabase: import('@supabase/supabase-js').SupabaseClient;
+			user: import('@supabase/supabase-js').User | null;
 		}
 
 		// interface PageData {}
