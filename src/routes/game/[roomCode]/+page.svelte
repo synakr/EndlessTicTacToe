@@ -25,10 +25,7 @@
 </script>
 
 <!-- ✅ Background wraps whole page -->
-<div
-  class="min-h-screen bg-cover bg-center flex flex-col p-2"
-  style="background-image: url('/bg1.png')"
->
+<div>
 
   <h1 class="text-center text-3xl text-[#EAE8FF] font-bold my-2">
     TIC TAC TOE ARENA

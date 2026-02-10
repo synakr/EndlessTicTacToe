@@ -1,5 +1,7 @@
 <script lang="ts">
-	let gameMode = 'MULTI';
+	import AuthLayout from '$lib/components/AuthLayout.svelte';
+
+	let gameMode: 'MULTI' | 'AI' | 'DEVICE' = 'MULTI';
 	let boardSize: 3 | 4 | 5 = 3;
 	let tieBreaker: 3 | 4 | 5 = 3;
 
@@ -14,18 +16,12 @@
 			const res = await fetch('/api/game/create', {
 				method: 'POST',
 				headers: { 'Content-Type': 'application/json' },
-				body: JSON.stringify({
-					gameMode,
-					boardSize,
-					tieBreaker
-				})
+				body: JSON.stringify({ gameMode, boardSize, tieBreaker })
 			});
 
 			if (!res.ok) throw new Error(await res.text());
 
 			const { roomCode } = await res.json();
-
-			// go to actual game
 			window.location.href = `/game/${roomCode}`;
 		} catch (err) {
 			errorMsg = err instanceof Error ? err.message : 'Failed to create game';
@@ -35,52 +31,42 @@
 	}
 </script>
 
-<h2>Game Setup</h2>
+<AuthLayout>
+	<span slot="title">Game Setup</span>
 
-<form on:submit|preventDefault={createGame}>
-	<!-- Board Size -->
-	<label for="mode">Game Mode</label>
-	<select id="mode" bind:value={gameMode}>
-	<option value="AI">COMPUTER</option>
-	<option value="DEVICE">FRIEND</option>
-	<option value="MULTI">MULTIPLAYER</option>
-	</select>
+	<form on:submit|preventDefault={createGame} class="space-y-3">
+		<label for="mode" class="text-sm">Game Mode</label>
+		<select id="mode" bind:value={gameMode} class="auth-input">
+			<option value="AI">Computer</option>
+			<option value="DEVICE">Friend</option>
+			<option value="MULTI">Multiplayer</option>
+		</select>
 
-	<!-- Board Size -->
-	<label for="boardSize">Board Size</label>
-	<select id="boardSize" bind:value={boardSize}>
-	<option value={3}>3 x 3</option>
-	<option value={4}>4 x 4</option>
-	<option value={5}>5 x 5</option>
-	</select>
+		<label for="board" class="text-sm">Board Size</label>
+		<select id="board" bind:value={boardSize} class="auth-input">
+			<option value={3}>3 x 3</option>
+			<option value={4}>4 x 4</option>
+			<option value={5}>5 x 5</option>
+		</select>
 
-	<!-- Win Condition -->
-	<label for="tieBreaker">Tie Breaker</label>
-	<select id="tieBreaker" bind:value={tieBreaker}>
-	<option value={3}>Connect 3</option>
-	<option value={4}>Connect 4</option>
-	<option value={5}>Connect 5</option>
-	</select>
+		<label for="win" class="text-sm">Win Length</label>
+		<select id="win" bind:value={tieBreaker} class="auth-input">
+			<option value={3}>Connect 3</option>
+			<option value={4}>Connect 4</option>
+			<option value={5}>Connect 5</option>
+		</select>
 
 
-	<button disabled={loading}>
-		{loading ? 'Creating...' : 'Create Game'}
-	</button>
+		<button class="auth-btn" disabled={loading}>
+			{loading ? 'Creating...' : 'Create Game'}
+		</button>
 
-	{#if errorMsg}
-		<p class="error">{errorMsg}</p>
-	{/if}
-</form>
+		{#if errorMsg}
+			<p class="text-red-300 text-sm">{errorMsg}</p>
+		{/if}
+	</form>
 
-<style>
-	form {
-		display: flex;
-		flex-direction: column;
-		gap: 0.8rem;
-		max-width: 320px;
-	}
-
-	.error {
-		color: red;
-	}
-</style>
+	<div slot="switch">
+		<a href="/join" class="underline">Join with Room Code</a>
+	</div>
+</AuthLayout>

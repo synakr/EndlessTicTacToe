@@ -50,8 +50,7 @@ model Move {
   id        String   @id @default(uuid())
   gameId    String
   userId    String?
-  row       Int
-  col       Int
+  cell      Int
   moveNo    Int
   createdAt DateTime @default(now())
 

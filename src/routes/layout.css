@@ -1,1 +1,9 @@
 @import 'tailwindcss';
+
+.auth-input {
+  @apply w-full p-2 rounded bg-[#023e8a4D] text-white placeholder-gray-200 border border-white/30 focus:outline-none;
+}
+
+.auth-btn {
+  @apply w-full py-2 rounded bg-white text-black font-medium disabled:opacity-60;
+}

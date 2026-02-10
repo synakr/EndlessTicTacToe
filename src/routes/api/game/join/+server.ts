@@ -31,8 +31,7 @@ export const POST = async ({ locals, request }) => {
 		data: {
 			gameId: game.id,
 			userId: locals.user.id,
-			symbol: 'O',
-			type: 'HUMAN'
+			symbol: 'O'
 		}
 	});
 

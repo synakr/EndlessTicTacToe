@@ -3,17 +3,18 @@
 
 	let email = '';
 	let password = '';
+	let username = '';
 	let loading = false;
 	let errorMsg = '';
 
-	async function handleLogin() {
+	async function handleSignup() {
 		loading = true;
 		errorMsg = '';
 
-		const res = await fetch('/login', {
+		const res = await fetch('/signup', {
 			method: 'POST',
 			headers: { 'Content-Type': 'application/json' },
-			body: JSON.stringify({ email, password })
+			body: JSON.stringify({ email, password, username })
 		});
 
 		if (res.ok) window.location.href = '/modes';
@@ -24,9 +25,10 @@
 </script>
 
 <AuthLayout>
-	<span slot="title">Login</span>
+	<span slot="title">Signup</span>
 
-	<form on:submit|preventDefault={handleLogin} class="space-y-3">
+	<form on:submit|preventDefault={handleSignup} class="space-y-3">
+		<input class="auth-input" placeholder="Username" bind:value={username} required />
 		<input class="auth-input" type="email" placeholder="Email" bind:value={email} required />
 		<input
 			class="auth-input"
@@ -37,7 +39,7 @@
 		/>
 
 		<button class="auth-btn" disabled={loading}>
-			{loading ? 'Logging in...' : 'Login'}
+			{loading ? 'Creating...' : 'Signup'}
 		</button>
 
 		{#if errorMsg}
@@ -46,7 +48,7 @@
 	</form>
 
 	<div slot="switch">
-		Don’t have account?
-		<a href="/signup" class="underline">Signup</a>
+		Already have account?
+		<a href="/login" class="underline">Login</a>
 	</div>
 </AuthLayout>
