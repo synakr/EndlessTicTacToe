@@ -7,3 +7,7 @@
 .auth-btn {
   @apply w-full py-2 rounded bg-white text-black font-medium disabled:opacity-60;
 }
+body{
+  margin: 0;
+  padding: 0;
+}

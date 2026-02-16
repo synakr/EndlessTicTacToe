@@ -11,8 +11,8 @@
 
 <!-- Background wraps whole page -->
 <div
-	class="min-h-screen bg-cover bg-center flex flex-col p-2"
-	style="background-image: url('/bg1.png')"
+	class="flex min-h-screen flex-col bg-cover bg-center p-2"
+	style="background-color: black"
 >
 	{@render children()}
 </div>
