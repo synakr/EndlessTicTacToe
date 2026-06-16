@@ -24,11 +24,24 @@
 </div>
 
 <style>
+  :global(body) {
+    color: white;
+  }
+
+  h2,
+  h3,
+  p,
+  b {
+    color: white;
+  }
+
   .card {
     padding: 12px;
-    border: 1px solid #ccc;
+    border: 1px solid #444;
     margin: 10px 0;
-    border-radius: 6px;
+    border-radius: 12px;
+    background: #111;
+    color: white;
   }
 
   .actions {
@@ -38,8 +51,16 @@
   }
 
   .btn {
-    padding: 8px 12px;
-    border: 1px solid #333;
+    padding: 10px 16px;
+    border-radius: 8px;
+    border: 1px solid #555;
+    background: #222;
+    color: white;
     text-decoration: none;
+    transition: 0.2s;
+  }
+
+  .btn:hover {
+    background: #333;
   }
 </style>

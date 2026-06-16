@@ -4,7 +4,7 @@
   let roomCode = '';
   let errorMsg = '';
 
-  function joinRoom() {
+  async function joinRoom() {
     const code = roomCode.trim().toUpperCase();
 
     if (!code) {
@@ -12,13 +12,28 @@
       return;
     }
 
-    // simple validation (6–8 alphanumeric)
     if (!/^[A-Z0-9]{4,8}$/.test(code)) {
       errorMsg = 'Invalid room code format';
       return;
     }
 
-    // redirect to actual game page
+    const res = await fetch('/api/game/join', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json'
+      },
+      body: JSON.stringify({
+        roomCode: code
+      })
+    });
+
+    const result = await res.json();
+
+    if (!res.ok) {
+      errorMsg = result.error ?? 'Failed to join room';
+      return;
+    }
+
     goto(`/game/${code}`);
   }
 </script>

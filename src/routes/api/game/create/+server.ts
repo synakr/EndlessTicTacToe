@@ -10,9 +10,6 @@ export const POST = async ({ locals, request }) => {
 	const data = await request.json();
 	const { gameMode, boardSize, tieBreaker } = data;
 
-	// check if everything conveyed okay
-	console.log(gameMode, boardSize, tieBreaker);
-
 	let roomCode;
 	let exists = true;
 
@@ -45,8 +42,6 @@ export const POST = async ({ locals, request }) => {
 			}
 		}
 	});
-
-	console.log(game);
 
 	return json({ roomCode: game.roomCode });
 };

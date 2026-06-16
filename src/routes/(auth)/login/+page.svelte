@@ -16,7 +16,7 @@
 			body: JSON.stringify({ email, password })
 		});
 
-		if (res.ok) window.location.href = '/modes';
+		if (res.ok) window.location.href = '/dashboard';
 		else errorMsg = await res.text();
 
 		loading = false;

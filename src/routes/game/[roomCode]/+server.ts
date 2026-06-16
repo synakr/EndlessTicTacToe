@@ -7,10 +7,11 @@ export const GET = async ({ params, locals }) => {
 	}
 
 	const game = await prisma.game.findUnique({
-		where: { roomCode: params.roomCode },
+		where: {
+			roomCode: params.roomCode
+		},
 		include: {
-			players: true,
-			moves: true
+			players: true
 		}
 	});
 
