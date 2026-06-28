@@ -138,7 +138,7 @@
 
   <div class="flex items-center gap-3">
     <a
-      href="https://github.com/synakr/TicTacToe-Arena"
+      href="https://github.com/synakr/EndlessTicTacToe"
       target="_blank"
       rel="noopener noreferrer"
       aria-label="View TicTacToe Arena source code on GitHub"
@@ -801,6 +801,19 @@
           Think ahead, predict future boards,
           track move history and outplay your opponent.
         </p>
+
+        <p class="leading-relaxed text-gray-400 mt-4">
+          Curious how the project started?
+          <br>
+          <a
+            href="https://synakr.github.io/EndlessTicTacToe/"
+            target="_blank"
+            rel="noopener noreferrer"
+            class="text-[#359381] hover:underline"
+          >
+            🎮 Try the original prototype (Classic Version) →
+          </a>
+        </p>
       </div>
 
       <!-- Open Source -->
@@ -812,7 +825,7 @@
 
         <div class="flex flex-col gap-3">
           <a
-            href="https://github.com/synakr/TicTacToe-Arena"
+            href="https://github.com/synakr/EndlessTicTacToe"
             target="_blank"
             rel="noopener noreferrer"
             class="text-[#359381] hover:text-[#4dc7ad] hover:underline transition"
@@ -821,7 +834,7 @@
           </a>
 
           <a
-            href="https://github.com/synakr/TicTacToe-Arena/issues"
+            href="https://github.com/synakr/EndlessTicTacToe/issues"
             target="_blank"
             rel="noopener noreferrer"
             class="text-[#359381] hover:text-[#4dc7ad] hover:underline transition"
@@ -830,7 +843,7 @@
           </a>
 
           <a
-            href="https://github.com/synakr/TicTacToe-Arena/pulls"
+            href="https://github.com/synakr/EndlessTicTacToe/pulls"
             target="_blank"
             rel="noopener noreferrer"
             class="text-[#359381] hover:text-[#4dc7ad] hover:underline transition"
@@ -840,25 +853,25 @@
 
           <div class="flex flex-wrap gap-3 mt-2">
             <a
-              href="https://github.com/synakr/TicTacToe-Arena"
+              href="https://github.com/synakr/EndlessTicTacToe"
               target="_blank"
               rel="noopener noreferrer"
               class="hover:scale-105 transition duration-300"
             >
               <img
-                src="https://img.shields.io/github/stars/synakr/TicTacToe-Arena?style=for-the-badge&logo=github&label=Stars&color=181717"
+                src="https://img.shields.io/github/stars/synakr/EndlessTicTacToe?style=flat-square"
                 alt="GitHub Stars"
               />
             </a>
 
             <a
-              href="https://github.com/synakr/TicTacToe-Arena/fork"
+              href="https://github.com/synakr/EndlessTicTacToe/fork"
               target="_blank"
               rel="noopener noreferrer"
               class="hover:scale-105 transition duration-300"
             >
               <img
-                src="https://img.shields.io/github/forks/synakr/TicTacToe-Arena?style=for-the-badge&logo=github&label=Forks&color=181717"
+                src="https://img.shields.io/github/forks/synakr/EndlessTicTacToe?style=flat-square"
                 alt="GitHub Forks"
               />
             </a>
@@ -884,7 +897,7 @@
           </a>
 
           <a
-            href="https://linkedin.com/in/YOUR-LINKEDIN"
+            href="https://linkedin.com/in/synakr"
             target="_blank"
             rel="noopener noreferrer"
             class="text-[#359381] hover:text-[#4dc7ad] hover:underline transition"
@@ -893,7 +906,7 @@
           </a>
 
           <a
-            href="mailto:YOUR_EMAIL"
+            href="mailto:EMAIL"
             class="text-[#359381] hover:text-[#4dc7ad] hover:underline transition"
           >
             Email
