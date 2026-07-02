@@ -614,67 +614,147 @@ export let data;
 @media (max-width: 640px) {
   .page {
     width: 100%;
-    padding: 14px 12px 24px;
+    padding: 10px;
     box-sizing: border-box;
   }
 
+  /* Hero */
   .hero {
-    flex-direction: column;
-    align-items: flex-start;
-    gap: 12px;
-    margin-bottom: 16px;
+    margin-bottom: 10px;
+    gap: 8px;
+  }
+
+  .eyebrow {
+    font-size: 0.65rem;
+    margin-bottom: 4px;
+  }
+
+  h1 {
+    font-size: 1.45rem;
+  }
+
+  .subtext {
+    display: none;
+  }
+
+  .hero-badge {
+    padding: 6px 10px;
+    font-size: 0.75rem;
+  }
+
+  /* Layout */
+  .grid {
+    grid-template-columns: 1fr;
+    gap: 10px;
+    margin-bottom: 10px;
   }
 
   .card {
-    border-radius: 18px;
+    border-radius: 16px;
   }
 
   .profile-card,
   .actions-card {
-    padding: 14px;
+    padding: 12px;
+  }
+
+  /* Profile */
+  .profile-top {
+    gap: 10px;
+    align-items: center;
   }
 
   .avatar {
-    width: 52px;
-    height: 52px;
-    border-radius: 14px;
+    width: 46px;
+    height: 46px;
+    border-radius: 12px;
+    font-size: 0.95rem;
   }
 
-  .profile-top {
-    align-items: flex-start;
-    gap: 12px;
+  h2 {
+    font-size: 1rem;
   }
 
-  .profile-meta,
+  .muted {
+    font-size: 0.78rem;
+    margin-top: 2px;
+  }
+
+  .divider {
+    margin: 10px 0;
+  }
+
+  .profile-meta {
+    grid-template-columns: repeat(2, 1fr);
+    gap: 8px;
+  }
+
+  .meta-box {
+    min-height: 64px;
+    padding: 10px;
+    border-radius: 12px;
+  }
+
+  .label {
+    font-size: 0.68rem;
+    margin-bottom: 3px;
+  }
+
+  .meta-box strong {
+    font-size: 0.82rem;
+  }
+
+  /* Stats */
   .stats-panel {
-    grid-template-columns: 1fr;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 8px;
   }
 
-  .meta-box,
   .stat-card {
-    border-radius: 14px;
+    min-height: 82px;
+    padding: 10px;
+    border-radius: 12px;
+  }
+
+  .stat-label {
+    font-size: 0.68rem;
+  }
+
+  .stat-value {
+    font-size: 1.25rem;
+  }
+
+  /* Actions */
+  .actions-card {
+    gap: 10px;
+  }
+
+  .actions-copy h3 {
+    font-size: 0.95rem;
+  }
+
+  .actions-copy p {
+    display: none;
   }
 
   .actions {
-    flex-direction: column;
-    width: 100%;
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 8px;
   }
 
   .btn {
-    width: 100%;
     min-width: 0;
+    width: 100%;
+    padding: 10px 4px;
+    font-size: 0.75rem;
+    border-radius: 10px;
   }
-.logout {
-  color: #f5f7fb;
-  background: rgba(255, 80, 80, 0.12);
-  border: 1px solid rgba(255, 120, 120, 0.25);
-  cursor: pointer;
-  font: inherit;
-}
 
-.logout:hover {
-  background: rgba(255, 80, 80, 0.2);
-}
-
+  .logout {
+    color: #f5f7fb;
+    background: rgba(255, 80, 80, 0.12);
+    border: 1px solid rgba(255, 120, 120, 0.25);
+  }
 }
 </style>
