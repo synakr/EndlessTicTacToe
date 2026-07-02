@@ -1,5 +1,4 @@
 <script lang="ts">
-  import { onMount } from 'svelte';
   import AuthLayout from '$lib/components/AuthLayout.svelte';
 
   let gameMode: 'MULTI' | 'AI' | 'DEVICE' = 'MULTI';
@@ -8,107 +7,8 @@
 
   let loading = false;
   let errorMsg = '';
-
-let heroBox: HTMLDivElement | null = null;
-let formBox: HTMLDivElement | null = null;
-let switchBox: HTMLDivElement | null = null;
-
   const butterflies = Array.from({ length: 8 }, (_, i) => i);
 
-  type SkeletonItem = {
-    x: number;
-    y: number;
-    vx: number;
-    vy: number;
-    size: number;
-    rotate: number;
-    spin: number;
-    popped: boolean;
-  };
-
-  let skeletons: SkeletonItem[] = [];
-
-  const rand = (min: number, max: number) => min + Math.random() * (max - min);
-  const clamp = (value: number, min: number, max: number) => Math.max(min, Math.min(max, value));
-
-// function getNoFlyZone() {
-//   const rects = [heroBox, formBox, switchBox]
-//     .filter(Boolean)
-//     .map((el) => el!.getBoundingClientRect());
-
-//   if (!rects.length) return null;
-
-//   return {
-//     left: Math.min(...rects.map((r) => r.left)) - 24,
-//     top: Math.min(...rects.map((r) => r.top)) - 24,
-//     right: Math.max(...rects.map((r) => r.right)) + 24,
-//     bottom: Math.max(...rects.map((r) => r.bottom)) + 24
-//   };
-// }
-
-  function createSkeletons(width: number, height: number): SkeletonItem[] {
-    const base = width < 640 ? 120 : 220;
-
-    const seeds = [
-      { x: width * 0.03, y: height * 0.12, vx: 0.42, vy: 0.22, size: 1.05, rotate: -8, spin: 0.03 },
-      { x: width * 0.80, y: height * 0.16, vx: -0.36, vy: 0.25, size: 1.0, rotate: 10, spin: -0.02 },
-      { x: width * 0.05, y: height * 0.56, vx: 0.34, vy: -0.18, size: 0.92, rotate: 7, spin: 0.025 },
-      { x: width * 0.82, y: height * 0.62, vx: -0.38, vy: -0.20, size: 0.98, rotate: -10, spin: -0.03 },
-      { x: width * 0.18, y: height * 0.80, vx: 0.28, vy: -0.16, size: 0.82, rotate: 4, spin: 0.02 }
-    ];
-
-    return seeds.map((s) => {
-      const box = base * s.size;
-
-      return {
-        x: clamp(s.x, 0, Math.max(0, width - box - 8)),
-        y: clamp(s.y, 0, Math.max(0, height - box - 8)),
-        vx: s.vx * (Math.random() > 0.5 ? 1 : -1),
-        vy: s.vy * (Math.random() > 0.5 ? 1 : -1),
-        size: s.size,
-        rotate: s.rotate,
-        spin: s.spin * (Math.random() > 0.5 ? 1 : -1),
-        popped: false
-      };
-    });
-  }
-
-function nudgeSkeleton(index: number, event: MouseEvent) {
-  const target = event.currentTarget as HTMLElement | null;
-  const rect = target?.getBoundingClientRect();
-
-  const clickX = event.clientX;
-  const clickY = event.clientY;
-
-  const centerX = rect ? rect.left + rect.width / 2 : clickX;
-  const centerY = rect ? rect.top + rect.height / 2 : clickY;
-
-  const dx = centerX - clickX;
-  const dy = centerY - clickY;
-  const dist = Math.hypot(dx, dy) || 1;
-
-  const pushX = (dx / dist) * 2.5;
-  const pushY = (dy / dist) * 2.5;
-
-  skeletons = skeletons.map((s, i) => {
-    if (i !== index) return s;
-
-    return {
-      ...s,
-      x: s.x + (dx / dist) * 45 + rand(-12, 12),
-      y: s.y + (dy / dist) * 45 + rand(-12, 12),
-      vx: s.vx + pushX + rand(-0.4, 0.4),
-      vy: s.vy + pushY + rand(-0.4, 0.4),
-      rotate: s.rotate + rand(-18, 18),
-      spin: s.spin + rand(-0.06, 0.06),
-      popped: true
-    };
-  });
-
-  window.setTimeout(() => {
-    skeletons = skeletons.map((s, i) => (i === index ? { ...s, popped: false } : s));
-  }, 220);
-}
   async function createGame() {
     errorMsg = '';
     loading = true;
@@ -130,100 +30,6 @@ function nudgeSkeleton(index: number, event: MouseEvent) {
       loading = false;
     }
   }
-
-  onMount(() => {
-    skeletons = createSkeletons(window.innerWidth, window.innerHeight);
-
-    const handleResize = () => {
-      skeletons = createSkeletons(window.innerWidth, window.innerHeight);
-    };
-
-    window.addEventListener('resize', handleResize);
-
-    let raf = 0;
-    let last = performance.now();
-
-    const step = (now: number) => {
-      const dt = Math.min((now - last) / 16.6667, 2);
-      last = now;
-
-      const width = window.innerWidth;
-      const height = window.innerHeight;
-      const base = width < 640 ? 120 : 220;
-
-      skeletons = skeletons.map((s) => {
-        const box = base * s.size;
-        const maxX = Math.max(0, width - box - 8);
-        const maxY = Math.max(0, height - box - 8);
-
-        let x = s.x + s.vx * dt;
-        let y = s.y + s.vy * dt;
-        let vx = s.vx;
-        let vy = s.vy;
-        let rotate = s.rotate + s.spin * dt;
-
-        if (x <= 0 || x >= maxX) {
-          vx = -vx;
-          x = clamp(x, 0, maxX);
-          rotate += 6;
-        }
-
-        if (y <= 0 || y >= maxY) {
-          vy = -vy;
-          y = clamp(y, 0, maxY);
-          rotate -= 4;
-        }
-
-// const zone = getNoFlyZone();
-
-// if (zone) {
-//   const cx = x + box / 2;
-//   const cy = y + box / 2;
-
-//   const inside =
-//     cx > zone.left &&
-//     cx < zone.right &&
-//     cy > zone.top &&
-//     cy < zone.bottom;
-
-//   if (inside) {
-//     const distLeft = Math.abs(cx - zone.left);
-//     const distRight = Math.abs(zone.right - cx);
-//     const distTop = Math.abs(cy - zone.top);
-//     const distBottom = Math.abs(zone.bottom - cy);
-
-//     const nearest = Math.min(distLeft, distRight, distTop, distBottom);
-
-//     if (nearest === distLeft) {
-//       x = zone.left - box - 12;
-//       vx = -Math.abs(vx);
-//     } else if (nearest === distRight) {
-//       x = zone.right + 12;
-//       vx = Math.abs(vx);
-//     } else if (nearest === distTop) {
-//       y = zone.top - box - 12;
-//       vy = -Math.abs(vy);
-//     } else {
-//       y = zone.bottom + 12;
-//       vy = Math.abs(vy);
-//     }
-//   }
-// }
-
-        return { ...s, x, y, vx, vy, rotate };
-      });
-
-      raf = requestAnimationFrame(step);
-    };
-
-    raf = requestAnimationFrame(step);
-
-    
-    return () => {
-      cancelAnimationFrame(raf);
-      window.removeEventListener('resize', handleResize);
-    };
-  });
 </script>
 
 <svelte:head>
@@ -242,25 +48,9 @@ function nudgeSkeleton(index: number, event: MouseEvent) {
     {/each}
   </div>
 
-  <div class="skeleton-field" aria-hidden="true">
-    {#each skeletons as s, i}
-      <button
-        type="button"
-        class:pop={s.popped}
-        class="skeleton-wrap"
-        style={`top:${s.y}px; left:${s.x}px; transform: scale(${s.size}) rotate(${s.rotate}deg);`}
-on:click={(e) => nudgeSkeleton(i, e)}
-        aria-label="Floating skeleton decoration"
-      >
-        <span class="skeleton-glow"></span>
-        <img src="/img/skeleton.png" alt="" class="skeleton-img" />
-      </button>
-    {/each}
-  </div>
-
   <div class="page-shell">
     <AuthLayout>
-<div class="hero" slot="title" bind:this={heroBox}>
+<div class="hero" slot="title">
           <p class="eyebrow">Endless Tic Tac Toe</p>
         <h1>Game Setup</h1>
         <p class="subtext">
@@ -268,7 +58,7 @@ on:click={(e) => nudgeSkeleton(i, e)}
         </p>
       </div>
 
-<div class="form-card" bind:this={formBox}>
+        <div class="form-card">
           <form on:submit|preventDefault={createGame} class="setup-form">
           <div class="field-group">
             <label for="mode">Game Mode</label>
@@ -313,7 +103,7 @@ on:click={(e) => nudgeSkeleton(i, e)}
         </form>
       </div>
 
-<div slot="switch" class="switch-row" bind:this={switchBox}>
+      <div slot="switch" class="switch-row">
           <a href="/join">Join with Room Code</a>
       </div>
     </AuthLayout>
@@ -419,31 +209,13 @@ on:click={(e) => nudgeSkeleton(i, e)}
     background: radial-gradient(circle, rgba(106, 231, 203, 0.12), transparent 70%);
   }
 
-.butterfly-field,
-.skeleton-field {
+.butterfly-field{
   position: fixed;
   inset: 0;
   z-index: 1;
   pointer-events: none;
 }
 
-.skeleton-wrap {
-  position: fixed;
-  top: 0;
-  left: 0;
-  width: 220px;
-  border: 0;
-  padding: 0;
-  background: transparent;
-  cursor: pointer;
-  pointer-events: auto;
-  user-select: none;
-  outline: none;
-  touch-action: manipulation;
-  transform-origin: center center;
-  will-change: transform, top, left;
-  z-index: 1;
-}
   .butterfly {
     position: absolute;
     width: 26px;
@@ -494,84 +266,55 @@ on:click={(e) => nudgeSkeleton(i, e)}
   .butterfly.b7 { top: 80%; left: 28%; animation-delay: .5s, 6s; }
   .butterfly.b8 { top: 12%; left: 48%; animation-delay: .4s, 1.5s; }
 
-.skeleton-wrap {
-  position: fixed;
-  top: 0;
-  left: 0;
-  width: 220px;
-  border: 0;
-  padding: 0;
-  background: transparent;
-  cursor: pointer;
-  pointer-events: auto;
-  user-select: none;
-  outline: none;
-  touch-action: manipulation;
-  transform-origin: center center;
-  will-change: transform, top, left;
-  z-index: 6;
+
+.hero {
+  position: relative;
+  z-index: 4;
+  width: min(560px, calc(100vw - 28px));
+  margin: 5vh auto 0;
+  padding: 24px 22px 20px;
+  border-radius: 30px;
+
+  background: rgba(18, 32, 72, 0.28);
+  backdrop-filter: blur(22px) saturate(180%);
+  -webkit-backdrop-filter: blur(22px) saturate(180%);
+
+  border: 1px solid rgba(255,255,255,.18);
+
+  box-shadow:
+    0 30px 80px rgba(0,0,0,.45),
+    inset 0 1px 0 rgba(255,255,255,.18),
+    inset 0 -1px 0 rgba(255,255,255,.04);
 }
 
-  .skeleton-wrap.pop .skeleton-img {
-    animation: pop 220ms ease-out;
-  }
-
-  .skeleton-glow {
-    position: absolute;
-    inset: -18%;
-    border-radius: 28px;
-    background:
-      radial-gradient(circle at center, rgba(255, 255, 255, 0.18), transparent 42%),
-      radial-gradient(circle at center, rgba(160, 150, 255, 0.12), transparent 62%);
-    filter: blur(10px);
-    z-index: 0;
-  }
-
-  .skeleton-img {
-    position: relative;
-    z-index: 1;
-    display: block;
-    width: 100%;
-    height: auto;
-    user-select: none;
-    pointer-events: none;
-    opacity: 1;
-    filter:
-      brightness(1.85)
-      saturate(1.6)
-      contrast(1.06)
-      drop-shadow(0 0 14px rgba(255, 255, 255, 0.12))
-      drop-shadow(0 0 28px rgba(138, 108, 255, 0.22));
-    mix-blend-mode: screen;
-  }
-
-  .hero {
-    position: relative;
-    z-index: 4;
-    width: min(560px, calc(100vw - 28px));
-    margin: 5vh auto 0;
-    padding: 24px 22px 20px;
-    border-radius: 28px;
-    background:
-      linear-gradient(180deg, rgba(13, 28, 73, 0.92), rgba(8, 18, 44, 0.94));
-    border: 1px solid rgba(255, 255, 255, 0.10);
-    box-shadow:
-      0 28px 60px rgba(0, 0, 0, 0.34),
-      inset 0 1px 0 rgba(255, 255, 255, 0.08);
-    text-align: center;
-  }
-
-  .hero::before {
+.hero::before,
+.form-card::before {
     content: "";
     position: absolute;
     inset: 0;
-    border-radius: 28px;
-    background:
-      radial-gradient(circle at top left, rgba(116, 98, 255, 0.20), transparent 28%),
-      radial-gradient(circle at top right, rgba(255, 255, 255, 0.08), transparent 20%),
-      linear-gradient(135deg, rgba(255, 255, 255, 0.08), transparent 45%);
+    border-radius: inherit;
     pointer-events: none;
-  }
+
+    background:
+        linear-gradient(
+            130deg,
+            rgba(255,255,255,.22),
+            rgba(255,255,255,.04) 28%,
+            transparent 55%
+        ),
+        radial-gradient(
+            circle at top,
+            rgba(255,255,255,.12),
+            transparent 60%
+        );
+}
+
+.eyebrow,
+.hero h1,
+.subtext {
+  width: 100%;
+  text-align: center;
+}
 
   .eyebrow {
     margin: 0 0 8px;
@@ -597,21 +340,25 @@ on:click={(e) => nudgeSkeleton(i, e)}
     font-size: 0.98rem;
   }
 
-  .form-card {
-    position: relative;
-    z-index: 4;
-    width: min(560px, calc(100vw - 28px));
-    margin: 14px auto 0;
-    padding: 24px 22px 22px;
-    border-radius: 28px;
-    background:
-      linear-gradient(180deg, rgba(8, 23, 54, 0.92), rgba(5, 14, 36, 0.96));
-    border: 1px solid rgba(255, 255, 255, 0.10);
-    box-shadow:
-      0 28px 60px rgba(0, 0, 0, 0.34),
-      inset 0 1px 0 rgba(255, 255, 255, 0.08);
-    transform: translateZ(0);
-  }
+.form-card {
+  position: relative;
+  z-index: 4;
+  width: min(560px, calc(100vw - 28px));
+  margin: 16px auto 0;
+  padding: 24px 22px;
+  border-radius: 30px;
+
+  background: rgba(10, 24, 56, 0.34);
+  backdrop-filter: blur(24px) saturate(180%);
+  -webkit-backdrop-filter: blur(24px) saturate(180%);
+
+  border: 1px solid rgba(255,255,255,.15);
+
+  box-shadow:
+    0 35px 80px rgba(0,0,0,.45),
+    inset 0 1px 0 rgba(255,255,255,.16),
+    inset 0 -1px 0 rgba(255,255,255,.05);
+}
 
   .form-card::before {
     content: "";
@@ -663,19 +410,40 @@ on:click={(e) => nudgeSkeleton(i, e)}
   -webkit-appearance: none;
   padding: 14px 16px;
   border-radius: 14px;
-  border: 1px solid rgba(255, 255, 255, 0.16);
+
   outline: none;
   color: #f7f4ff;
-  background:
-    linear-gradient(180deg, rgba(24, 52, 113, 0.92), rgba(17, 40, 90, 0.92));
+
+  /* Glass */
+  background: rgba(255, 255, 255, 0.08);
+  backdrop-filter: blur(18px) saturate(180%);
+  -webkit-backdrop-filter: blur(18px) saturate(180%);
+
+  border: 1px solid rgba(255, 255, 255, 0.18);
+
   box-shadow:
-    inset 0 1px 0 rgba(255, 255, 255, 0.08),
-    0 10px 20px rgba(0, 0, 0, 0.14);
+    inset 0 1px 0 rgba(255, 255, 255, 0.18),
+    inset 0 -1px 0 rgba(255, 255, 255, 0.03),
+    0 10px 20px rgba(0, 0, 0, 0.18);
+
   font-size: 1rem;
+
   transition:
     transform 0.16s ease,
     border-color 0.16s ease,
-    box-shadow 0.16s ease;
+    box-shadow 0.16s ease,
+    background 0.16s ease;
+}
+
+.select:hover,
+.select:focus {
+  background: rgba(255, 255, 255, 0.11);
+  border-color: rgba(255, 255, 255, 0.28);
+
+  box-shadow:
+    inset 0 1px 0 rgba(255, 255, 255, 0.22),
+    inset 0 -1px 0 rgba(255, 255, 255, 0.05),
+    0 14px 28px rgba(0, 0, 0, 0.22);
 }
 .select {
   color-scheme: dark;
@@ -686,8 +454,7 @@ on:click={(e) => nudgeSkeleton(i, e)}
   color: #f7f4ff;
 }
 
-.select option:checked,
-.select option:hover {
+.select option:checked {
   background: #1f4fa6;
   color: #ffffff;
 }
@@ -706,24 +473,27 @@ on:click={(e) => nudgeSkeleton(i, e)}
     border: 0;
     border-radius: 14px;
     background:
-      linear-gradient(135deg, #ffffff 0%, #f4f0ff 100%);
+        linear-gradient(
+            135deg,
+            rgba(255,255,255,.95),
+            rgba(225,235,255,.85)
+        );
     color: #11162b;
     font-size: 1rem;
     font-weight: 800;
     cursor: pointer;
     box-shadow:
-      0 14px 28px rgba(0, 0, 0, 0.18),
-      inset 0 1px 0 rgba(255, 255, 255, 0.8);
-    transition:
-      transform 0.16s ease,
-      box-shadow 0.16s ease,
-      filter 0.16s ease;
+        0 10px 35px rgba(130,170,255,.35),
+        0 0 25px rgba(255,255,255,.12);
+    transition: .25s;
   }
 
-  .cta:hover {
-    transform: translateY(-1px);
-    filter: brightness(1.02);
-  }
+.cta:hover {
+    transform: translateY(-2px);
+    box-shadow:
+        0 20px 45px rgba(130,170,255,.45),
+        0 0 40px rgba(255,255,255,.2);
+}
 
   .cta:disabled {
     cursor: not-allowed;
@@ -742,25 +512,69 @@ on:click={(e) => nudgeSkeleton(i, e)}
   }
 
   .switch-row {
-    position: relative;
-    z-index: 4;
-    width: min(560px, calc(100vw - 28px));
-    margin: 14px auto 0;
-    text-align: center;
-    color: rgba(247, 244, 255, 0.82);
-  }
+  position: relative;
+  z-index: 4;
+  width: min(560px, calc(100vw - 28px));
+  margin: 16px auto 0;
+  display: flex;
+  justify-content: center;
+}
 
-  .switch-row a {
-    color: #ffffff;
-    text-decoration: none;
-    border-bottom: 1px solid rgba(255, 255, 255, 0.5);
-    padding-bottom: 2px;
-    transition: opacity 0.16s ease;
-  }
+.switch-row a {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.45rem;
 
-  .switch-row a:hover {
-    opacity: 0.82;
-  }
+  padding: 12px 20px;
+  border-radius: 999px;
+
+  text-decoration: none;
+  color: #f8f9ff;
+  font-weight: 600;
+  letter-spacing: 0.02em;
+
+  background: rgba(255, 255, 255, 0.08);
+  backdrop-filter: blur(18px) saturate(180%);
+  -webkit-backdrop-filter: blur(18px) saturate(180%);
+
+  border: 1px solid rgba(255, 255, 255, 0.16);
+
+  box-shadow:
+    inset 0 1px 0 rgba(255, 255, 255, 0.18),
+    0 12px 24px rgba(0, 0, 0, 0.18);
+
+  transition:
+    transform 0.18s ease,
+    background 0.18s ease,
+    border-color 0.18s ease,
+    box-shadow 0.18s ease;
+}
+
+.switch-row a::after {
+  content: "→";
+  transition: transform 0.18s ease;
+}
+
+.switch-row a:hover {
+  transform: translateY(-2px);
+
+  background: rgba(255, 255, 255, 0.12);
+  border-color: rgba(255, 255, 255, 0.28);
+
+  box-shadow:
+    inset 0 1px 0 rgba(255, 255, 255, 0.24),
+    0 18px 34px rgba(0, 0, 0, 0.22),
+    0 0 20px rgba(160, 190, 255, 0.12);
+}
+
+.switch-row a:hover::after {
+  transform: translateX(4px);
+}
+
+.switch-row a:active {
+  transform: translateY(0);
+}
 
   @keyframes flutter {
     0%,
@@ -787,18 +601,6 @@ on:click={(e) => nudgeSkeleton(i, e)}
     }
     100% {
       translate: 0 0;
-    }
-  }
-
-  @keyframes pop {
-    0% {
-      transform: scale(1);
-    }
-    50% {
-      transform: scale(1.08) rotate(2deg);
-    }
-    100% {
-      transform: scale(1);
     }
   }
 
@@ -830,22 +632,6 @@ on:click={(e) => nudgeSkeleton(i, e)}
 
     .cta {
       padding: 13px 14px;
-    }
-
-    .skeleton-wrap {
-      width: 120px;
-      filter:
-        drop-shadow(0 22px 18px rgba(0, 0, 0, 0.24))
-        drop-shadow(0 0 16px rgba(255, 255, 255, 0.08));
-    }
-
-    .skeleton-img {
-      filter:
-        brightness(2)
-        saturate(1.7)
-        contrast(1.08)
-        drop-shadow(0 0 16px rgba(255, 255, 255, 0.14))
-        drop-shadow(0 0 30px rgba(138, 108, 255, 0.24));
     }
 
     .butterfly {
