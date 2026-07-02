@@ -199,10 +199,6 @@
         RESTART
       </button>
     </section>
-
-    <footer class="footer card">
-      Made with Love ♡ by Sayan
-    </footer>
   </main>
 </div>
 
@@ -215,8 +211,13 @@
     height: 100%;
   }
 
+  :global(*) {
+    box-sizing: border-box;
+  }
+
   :global(body) {
     overflow: hidden;
+    overscroll-behavior: none;
     color: #f5f1ff;
     font-family:
       Inter, ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI",
@@ -224,13 +225,10 @@
     background: #07070a;
   }
 
-  :global(*) {
-    box-sizing: border-box;
-  }
-
   .page {
     position: relative;
     width: 100%;
+    height: 100dvh;
     height: 100svh;
     overflow: hidden;
   }
@@ -255,55 +253,23 @@
       linear-gradient(
         180deg,
         rgba(6, 8, 18, 0.12) 0%,
-        rgba(6, 8, 18, 0.16) 35%,
-        rgba(6, 8, 18, 0.24) 100%
+        rgba(6, 8, 18, 0.18) 40%,
+        rgba(6, 8, 18, 0.28) 100%
       );
   }
 
-.shell {
-  position: relative;
-  z-index: 2;
-  width: min(1280px, 100%);
-  height: 100%;
-  margin: 0 auto;
-  padding: clamp(6px, 1vh, 12px);
-  display: grid;
-  grid-template-rows: auto auto minmax(0, 1fr) auto auto;
-  gap: clamp(4px, 0.7vh, 8px);
-  min-height: 0;
-}
-
-.topbar {
-  padding: clamp(8px, 1vh, 12px) clamp(12px, 1.4vw, 16px);
-}
-
-.scoreboard {
-  padding: 10px 12px;
-}
-
-.board-area {
-  min-height: 0;
-  display: grid;
-  place-items: center;
-}
-
-.board-card {
-  width: min(94vw, calc(100svh - 240px), 560px);
-  aspect-ratio: 1 / 1;
-  padding: clamp(8px, 1vw, 12px);
-}
-
-.controls {
-  margin-top: -2px;
-}
-
-.restart-btn {
-  margin-top: 0;
-}
-
-.footer {
-  padding: 8px 14px;
-}
+  .shell {
+    position: relative;
+    z-index: 2;
+    width: min(1180px, 100%);
+    height: 100%;
+    margin: 0 auto;
+    padding: clamp(6px, 1vh, 12px);
+    display: grid;
+    grid-template-rows: auto auto minmax(0, 1fr) auto;
+    gap: clamp(4px, 0.7vh, 8px);
+    min-height: 0;
+  }
 
   .card {
     position: relative;
@@ -336,7 +302,7 @@
   }
 
   .topbar {
-    padding: clamp(10px, 1.2vh, 14px) clamp(14px, 1.6vw, 18px);
+    padding: clamp(8px, 1vh, 12px) clamp(12px, 1.4vw, 16px);
     display: flex;
     justify-content: space-between;
     align-items: center;
@@ -374,7 +340,7 @@
   }
 
   .scoreboard {
-    padding: 12px 14px;
+    padding: 10px 12px;
     display: flex;
     align-items: center;
     justify-content: center;
@@ -418,48 +384,65 @@
     min-height: 0;
     display: grid;
     place-items: center;
+    align-self: stretch;
   }
 
-  .board-card {
-    width: min(96vw, calc(100svh - 270px), 560px);
-    aspect-ratio: 1 / 1;
-    padding: clamp(8px, 1.2vw, 12px);
-    display: grid;
-    place-items: stretch;
-  }
+.board-card {
+  width: min(94vw, 94dvh, calc(100svh - 220px), 560px);
+  aspect-ratio: 1 / 1;
+  padding: clamp(8px, 1vw, 12px);
+  display: grid;
+  place-items: stretch;
+}
 
-  .board {
-    --size: 3;
-    display: grid;
-    grid-template-columns: repeat(var(--size), minmax(0, 1fr));
-    gap: clamp(8px, 1.1vw, 12px);
-    width: 100%;
-    height: 100%;
-  }
+.board {
+  --size: 3;
+  width: 100%;
+  height: 100%;
+  display: grid;
+  grid-template-columns: repeat(var(--size), minmax(0, 1fr));
+  grid-auto-rows: minmax(0, 1fr);
+  gap: clamp(6px, 1vw, 10px);
+  align-items: stretch;
+  justify-items: stretch;
+}
 
-  .cell {
-    position: relative;
-    overflow: hidden;
-    border: 1px solid rgba(255, 255, 255, 0.18);
-    border-radius: clamp(14px, 1.6vw, 18px);
-    background: linear-gradient(
-      135deg,
-      rgba(255, 255, 255, 0.13),
-      rgba(255, 255, 255, 0.06)
-    );
-    backdrop-filter: blur(14px) saturate(150%);
-    -webkit-backdrop-filter: blur(14px) saturate(150%);
-    color: #fff8e8;
-    font-size: clamp(1.9rem, 6.8vmin, 4rem);
-    font-weight: 800;
-    cursor: pointer;
-    transition:
-      transform 0.16s ease,
-      background 0.16s ease,
-      box-shadow 0.16s ease;
-    -webkit-tap-highlight-color: transparent;
-    font: inherit;
-  }
+.cell {
+  position: relative;
+  overflow: hidden;
+  width: 100%;
+  height: 100%;
+  min-width: 0;
+  min-height: 0;
+  aspect-ratio: 1 / 1;
+  padding: 0;
+  appearance: none;
+  -webkit-appearance: none;
+  box-sizing: border-box;
+  border: 1px solid rgba(255, 255, 255, 0.18);
+  border-radius: clamp(12px, 1.3vw, 18px);
+  background: linear-gradient(
+    135deg,
+    rgba(255, 255, 255, 0.13),
+    rgba(255, 255, 255, 0.06)
+  );
+  backdrop-filter: blur(14px) saturate(150%);
+  -webkit-backdrop-filter: blur(14px) saturate(150%);
+  color: #fff8e8;
+  font-size: clamp(2.6rem, 10vmin, 5.2rem);
+  font-weight: 900;
+  line-height: 1;
+  cursor: pointer;
+  display: grid;
+  place-items: center;
+  transition:
+    transform 0.16s ease,
+    background 0.16s ease,
+    box-shadow 0.16s ease;
+  -webkit-tap-highlight-color: transparent;
+  font-family: inherit;
+  flex: none;
+}
 
   .cell::before {
     content: "";
@@ -517,85 +500,88 @@
     );
   }
 
-  .footer {
-    padding: 9px 14px;
-    text-align: center;
-    color: rgba(255, 255, 255, 0.88);
-    border-radius: 999px;
-    font-size: 0.9rem;
+  @media (max-width: 640px) {
+    .shell {
+      width: 100%;
+      padding: 6px;
+      gap: 6px;
+      grid-template-rows: auto auto minmax(0, 1fr) auto;
+    }
+
+    .topbar {
+      flex-direction: column;
+      align-items: stretch;
+      text-align: center;
+      padding: 8px 10px;
+      gap: 6px;
+      border-radius: 18px;
+    }
+
+    .eyebrow {
+      display: none;
+    }
+
+    h1 {
+      font-size: clamp(1rem, 4.8vw, 1.3rem);
+    }
+
+    .status-pill {
+      width: 100%;
+      padding: 8px 12px;
+      font-size: 0.9rem;
+    }
+
+    .scoreboard {
+      padding: 8px 10px;
+      gap: 10px;
+      border-radius: 18px;
+    }
+
+    .score-divider {
+      display: none;
+    }
+
+    .score-name {
+      font-size: 0.78rem;
+    }
+
+    .score-value {
+      font-size: 1rem;
+    }
+
+    .board-card {
+      width: min(92vw, calc(100dvh - 215px), 410px);
+      padding: 8px;
+      border-radius: 18px;
+    }
+
+    .board {
+      gap: 6px;
+    }
+
+    .cell {
+      border-radius: 12px;
+      font-size: clamp(2.1rem, 11vmin, 3.2rem);
+    }
+
+    .restart-btn {
+      padding: 9px 16px;
+      font-size: 0.95rem;
+    }
   }
 
-@media (max-width: 640px) {
-  .shell {
-    width: 100%;
-    padding: 6px;
-    gap: 6px;
-    grid-template-rows: auto auto minmax(0, 1fr) auto;
-  }
+  @media (max-height: 760px) {
+    .shell {
+      gap: 5px;
+    }
 
-  .topbar {
-    flex-direction: column;
-    align-items: stretch;
-    text-align: center;
-    padding: 8px 10px;
-    gap: 6px;
-    border-radius: 18px;
-  }
+    .topbar,
+    .scoreboard {
+      padding-block: 7px;
+    }
 
-  .eyebrow {
-    display: none;
+    .board-card {
+      width: min(92vmin, calc(100svh - 230px), 520px);
+    }
   }
-
-  h1 {
-    font-size: clamp(1rem, 4.8vw, 1.3rem);
-  }
-
-  .status-pill {
-    width: 100%;
-    padding: 8px 12px;
-    font-size: 0.9rem;
-  }
-
-  .scoreboard {
-    padding: 8px 10px;
-    gap: 10px;
-    border-radius: 18px;
-  }
-
-  .score-divider {
-    display: none;
-  }
-
-  .score-name {
-    font-size: 0.78rem;
-  }
-
-  .score-value {
-    font-size: 1rem;
-  }
-
-  .board-card {
-    width: min(92vw, calc(100dvh - 215px), 410px);
-    padding: 8px;
-    border-radius: 18px;
-  }
-
-  .board {
-    gap: 6px;
-  }
-
-  .cell {
-    border-radius: 12px;
-    font-size: clamp(1.7rem, 8.5vmin, 2.8rem);
-  }
-
-  .restart-btn {
-    padding: 9px 16px;
-    font-size: 0.95rem;
-  }
-
-  .footer {
-    display: none;
-  }
-}
 </style>
