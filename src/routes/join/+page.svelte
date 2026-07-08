@@ -60,7 +60,7 @@
   <div class="page-shell">
     <AuthLayout>
       <div slot="title" class="hero">
-        <p class="eyebrow">Endless Tic Tac Toe</p>
+        <p class="eyebrow">Tic Tac Toe Arena</p>
         <h1>Join Game</h1>
         <p class="subtext">
           Enter your room code and jump straight into the battle.

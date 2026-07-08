@@ -1,4 +1,5 @@
 <script lang="ts">
+import { onMount } from 'svelte';
   import AuthLayout from '$lib/components/AuthLayout.svelte';
 
   let gameMode: 'MULTI' | 'AI' | 'DEVICE' = 'MULTI';
@@ -255,7 +256,7 @@ on:click={(e) => nudgeSkeleton(i, e)}
   <div class="page-shell">
     <AuthLayout>
 <div class="hero" slot="title">
-          <p class="eyebrow">Endless Tic Tac Toe</p>
+          <p class="eyebrow">Tic Tac Toe Arena</p>
         <h1>Game Setup</h1>
         <p class="subtext">
           Build your arena, pick the board, and jump into a polished multiplayer battle.
