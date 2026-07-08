@@ -9,6 +9,100 @@
   let errorMsg = '';
   const butterflies = Array.from({ length: 8 }, (_, i) => i);
 
+  type SkeletonItem = {
+    x: number;
+    y: number;
+    vx: number;
+    vy: number;
+    size: number;
+    rotate: number;
+    spin: number;
+    popped: boolean;
+  };
+
+  let skeletons: SkeletonItem[] = [];
+
+  const rand = (min: number, max: number) => min + Math.random() * (max - min);
+  const clamp = (value: number, min: number, max: number) => Math.max(min, Math.min(max, value));
+
+// function getNoFlyZone() {
+//   const rects = [heroBox, formBox, switchBox]
+//     .filter(Boolean)
+//     .map((el) => el!.getBoundingClientRect());
+
+//   if (!rects.length) return null;
+
+//   return {
+//     left: Math.min(...rects.map((r) => r.left)) - 24,
+//     top: Math.min(...rects.map((r) => r.top)) - 24,
+//     right: Math.max(...rects.map((r) => r.right)) + 24,
+//     bottom: Math.max(...rects.map((r) => r.bottom)) + 24
+//   };
+// }
+
+  function createSkeletons(width: number, height: number): SkeletonItem[] {
+    const base = width < 640 ? 120 : 220;
+
+    const seeds = [
+      { x: width * 0.03, y: height * 0.12, vx: 0.42, vy: 0.22, size: 1.05, rotate: -8, spin: 0.03 },
+      { x: width * 0.80, y: height * 0.16, vx: -0.36, vy: 0.25, size: 1.0, rotate: 10, spin: -0.02 },
+      { x: width * 0.05, y: height * 0.56, vx: 0.34, vy: -0.18, size: 0.92, rotate: 7, spin: 0.025 },
+      { x: width * 0.82, y: height * 0.62, vx: -0.38, vy: -0.20, size: 0.98, rotate: -10, spin: -0.03 },
+      { x: width * 0.18, y: height * 0.80, vx: 0.28, vy: -0.16, size: 0.82, rotate: 4, spin: 0.02 }
+    ];
+
+    return seeds.map((s) => {
+      const box = base * s.size;
+
+      return {
+        x: clamp(s.x, 0, Math.max(0, width - box - 8)),
+        y: clamp(s.y, 0, Math.max(0, height - box - 8)),
+        vx: s.vx * (Math.random() > 0.5 ? 1 : -1),
+        vy: s.vy * (Math.random() > 0.5 ? 1 : -1),
+        size: s.size,
+        rotate: s.rotate,
+        spin: s.spin * (Math.random() > 0.5 ? 1 : -1),
+        popped: false
+      };
+    });
+  }
+
+function nudgeSkeleton(index: number, event: MouseEvent) {
+  const target = event.currentTarget as HTMLElement | null;
+  const rect = target?.getBoundingClientRect();
+
+  const clickX = event.clientX;
+  const clickY = event.clientY;
+
+  const centerX = rect ? rect.left + rect.width / 2 : clickX;
+  const centerY = rect ? rect.top + rect.height / 2 : clickY;
+
+  const dx = centerX - clickX;
+  const dy = centerY - clickY;
+  const dist = Math.hypot(dx, dy) || 1;
+
+  const pushX = (dx / dist) * 2.5;
+  const pushY = (dy / dist) * 2.5;
+
+  skeletons = skeletons.map((s, i) => {
+    if (i !== index) return s;
+
+    return {
+      ...s,
+      x: s.x + (dx / dist) * 45 + rand(-12, 12),
+      y: s.y + (dy / dist) * 45 + rand(-12, 12),
+      vx: s.vx + pushX + rand(-0.4, 0.4),
+      vy: s.vy + pushY + rand(-0.4, 0.4),
+      rotate: s.rotate + rand(-18, 18),
+      spin: s.spin + rand(-0.06, 0.06),
+      popped: true
+    };
+  });
+
+  window.setTimeout(() => {
+    skeletons = skeletons.map((s, i) => (i === index ? { ...s, popped: false } : s));
+  }, 220);
+}
   async function createGame() {
     errorMsg = '';
     loading = true;
@@ -30,6 +124,100 @@
       loading = false;
     }
   }
+
+  onMount(() => {
+    skeletons = createSkeletons(window.innerWidth, window.innerHeight);
+
+    const handleResize = () => {
+      skeletons = createSkeletons(window.innerWidth, window.innerHeight);
+    };
+
+    window.addEventListener('resize', handleResize);
+
+    let raf = 0;
+    let last = performance.now();
+
+    const step = (now: number) => {
+      const dt = Math.min((now - last) / 16.6667, 2);
+      last = now;
+
+      const width = window.innerWidth;
+      const height = window.innerHeight;
+      const base = width < 640 ? 120 : 220;
+
+      skeletons = skeletons.map((s) => {
+        const box = base * s.size;
+        const maxX = Math.max(0, width - box - 8);
+        const maxY = Math.max(0, height - box - 8);
+
+        let x = s.x + s.vx * dt;
+        let y = s.y + s.vy * dt;
+        let vx = s.vx;
+        let vy = s.vy;
+        let rotate = s.rotate + s.spin * dt;
+
+        if (x <= 0 || x >= maxX) {
+          vx = -vx;
+          x = clamp(x, 0, maxX);
+          rotate += 6;
+        }
+
+        if (y <= 0 || y >= maxY) {
+          vy = -vy;
+          y = clamp(y, 0, maxY);
+          rotate -= 4;
+        }
+
+// const zone = getNoFlyZone();
+
+// if (zone) {
+//   const cx = x + box / 2;
+//   const cy = y + box / 2;
+
+//   const inside =
+//     cx > zone.left &&
+//     cx < zone.right &&
+//     cy > zone.top &&
+//     cy < zone.bottom;
+
+//   if (inside) {
+//     const distLeft = Math.abs(cx - zone.left);
+//     const distRight = Math.abs(zone.right - cx);
+//     const distTop = Math.abs(cy - zone.top);
+//     const distBottom = Math.abs(zone.bottom - cy);
+
+//     const nearest = Math.min(distLeft, distRight, distTop, distBottom);
+
+//     if (nearest === distLeft) {
+//       x = zone.left - box - 12;
+//       vx = -Math.abs(vx);
+//     } else if (nearest === distRight) {
+//       x = zone.right + 12;
+//       vx = Math.abs(vx);
+//     } else if (nearest === distTop) {
+//       y = zone.top - box - 12;
+//       vy = -Math.abs(vy);
+//     } else {
+//       y = zone.bottom + 12;
+//       vy = Math.abs(vy);
+//     }
+//   }
+// }
+
+        return { ...s, x, y, vx, vy, rotate };
+      });
+
+      raf = requestAnimationFrame(step);
+    };
+
+    raf = requestAnimationFrame(step);
+
+    
+    return () => {
+      cancelAnimationFrame(raf);
+      window.removeEventListener('resize', handleResize);
+    };
+  });
 </script>
 
 <svelte:head>
@@ -45,6 +233,22 @@
   <div class="butterfly-field" aria-hidden="true">
     {#each butterflies as i}
       <span class="butterfly b{i + 1}"></span>
+    {/each}
+  </div>
+
+  <div class="skeleton-field" aria-hidden="true">
+    {#each skeletons as s, i}
+      <button
+        type="button"
+        class:pop={s.popped}
+        class="skeleton-wrap"
+        style={`top:${s.y}px; left:${s.x}px; transform: scale(${s.size}) rotate(${s.rotate}deg);`}
+on:click={(e) => nudgeSkeleton(i, e)}
+        aria-label="Floating skeleton decoration"
+      >
+        <span class="skeleton-glow"></span>
+        <img src="/img/skeleton.png" alt="" class="skeleton-img" />
+      </button>
     {/each}
   </div>
 
@@ -209,13 +413,31 @@
     background: radial-gradient(circle, rgba(106, 231, 203, 0.12), transparent 70%);
   }
 
-.butterfly-field{
+.butterfly-field,
+.skeleton-field {
   position: fixed;
   inset: 0;
   z-index: 1;
   pointer-events: none;
 }
 
+.skeleton-wrap {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 220px;
+  border: 0;
+  padding: 0;
+  background: transparent;
+  cursor: pointer;
+  pointer-events: auto;
+  user-select: none;
+  outline: none;
+  touch-action: manipulation;
+  transform-origin: center center;
+  will-change: transform, top, left;
+  z-index: 1;
+}
   .butterfly {
     position: absolute;
     width: 26px;
@@ -648,5 +870,21 @@
     .butterfly.b6 { top: 70%; left: 68%; }
     .butterfly.b7 { top: 78%; left: 24%; }
     .butterfly.b8 { top: 10%; left: 48%; }
+
+    .skeleton-wrap {
+  width: 120px;
+  filter:
+    drop-shadow(0 22px 18px rgba(0,0,0,.24))
+    drop-shadow(0 0 16px rgba(255,255,255,.08));
+}
+
+.skeleton-img {
+  filter:
+    brightness(2)
+    saturate(1.7)
+    contrast(1.08)
+    drop-shadow(0 0 16px rgba(255,255,255,.14))
+    drop-shadow(0 0 30px rgba(138,108,255,.24));
+}
   }
 </style>
