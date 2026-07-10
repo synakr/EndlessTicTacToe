@@ -280,28 +280,37 @@
       class:text-white="{!isDayMode}"
       class:text-[#1a2332]="{isDayMode}"
     >
-      ENDLESS <br />
-      TIC TAC TOE
+      TIC TAC TOE <br />
+      ARENA
     </h1>
 
     <p
-      class="text-sm sm:text-base md:text-xl max-w-xl px-4"
-      class:text-gray-300="{!isDayMode}"
-      class:text-gray-700="{isDayMode}"
+      class="max-w-xl px-4 text-center text-sm font-medium drop-shadow-[0_2px_10px_rgba(0,0,0,.35)] sm:text-base md:text-xl"
+      class:text-white="{!isDayMode}"
+      class:text-slate-900="{isDayMode}"
     >
       Challenge friends, climb the leaderboard, and keep playing forever.
     </p>
 
-    <div class="flex flex-col sm:flex-row gap-3 w-full max-w-xs sm:max-w-none sm:w-auto px-4">
+    <div class="flex w-full max-w-xs flex-col gap-3 px-4 sm:w-auto sm:max-w-none sm:flex-row">
       <a
         href="/dashboard"
         class="
-          px-6 sm:px-8 py-3 rounded-full border-2
-          font-semibold text-center
-          transition-all duration-300
+          rounded-full
+          border
+          px-7
+          py-3
+          text-center
+          font-semibold
+          transition-all
+          duration-300
+          hover:-translate-y-0.5
           hover:scale-105
-          backdrop-blur-md
-          {!isDayMode ? 'bg-white/10 hover:bg-white/20' : 'bg-white/40 hover:bg-white/60'}
+          backdrop-blur-xl
+
+          {!isDayMode
+            ? 'border-white/20 bg-white/10 text-white shadow-lg shadow-black/20 hover:bg-white/20'
+            : 'border-black/10 bg-white/80 text-slate-900 shadow-lg shadow-slate-300/30 hover:bg-white'}
         "
       >
         Play

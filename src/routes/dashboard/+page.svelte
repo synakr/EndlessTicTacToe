@@ -1,13 +1,13 @@
 <script>
   import { goto } from "$app/navigation";
-  import { supabase } from "$lib/supabase.client"; // adjust path if needed
+  import { supabase } from "$lib/supabase.client";
+
+  export let data;
 
   async function handleLogout() {
     await supabase.auth.signOut();
     await goto("/login");
   }
-
-export let data;
 
   const profile = data.profile ?? {};
   const stats = data.stats ?? {};
@@ -32,729 +32,162 @@ export let data;
   <title>Player Dashboard</title>
 </svelte:head>
 
-<div class="page">
-  <section class="hero">
-    <div class="hero-copy">
-      <p class="eyebrow">Tic-Tac-Toe Arena</p>
-      <h1>Player Dashboard</h1>
-      <p class="subtext">
-        Track your profile, monitor your match stats, and jump into a new game in one click.
-      </p>
-    </div>
+<div class="relative min-h-[100dvh] overflow-hidden bg-slate-950 text-slate-50">
+  <div class="pointer-events-none fixed inset-0 bg-[linear-gradient(180deg,#090f1d_0%,#050816_55%,#02040a_100%)]"></div>
+  <div class="pointer-events-none fixed inset-0 opacity-70 bg-[radial-gradient(circle_at_15%_20%,rgba(255,255,255,0.18)_0,transparent_1px),radial-gradient(circle_at_80%_30%,rgba(255,255,255,0.14)_0,transparent_1px),radial-gradient(circle_at_40%_70%,rgba(255,255,255,0.12)_0,transparent_1px),radial-gradient(circle_at_65%_15%,rgba(120,140,255,0.18),transparent_22%),radial-gradient(circle_at_25%_85%,rgba(93,242,194,0.1),transparent_20%)] bg-[length:320px_320px,420px_420px,280px_280px,auto,auto]"></div>
+  <div class="pointer-events-none fixed inset-0 bg-[radial-gradient(circle_at_center,transparent_0_55%,rgba(0,0,0,0.28)_100%)]"></div>
 
-    <div class="hero-badge">
-      <span class="badge-dot"></span>
-      <span>Ready to play</span>
-    </div>
-  </section>
+  <main class="relative z-10 mx-auto flex min-h-[100dvh] w-full max-w-6xl flex-col gap-3 overflow-hidden px-3 py-3 sm:px-4 sm:py-4 lg:gap-4">
+    <section class="rounded-[2rem] border border-white/15 bg-white/10 p-4 shadow-2xl backdrop-blur-2xl sm:p-5">
+      <div class="flex flex-col gap-3 md:flex-row md:items-start md:justify-between">
+        <div class="min-w-0">
+          <p class="text-[0.7rem] font-semibold uppercase tracking-[0.16em] text-indigo-200/90 sm:text-xs">
+            Tic-Tac-Toe Arena
+          </p>
 
-  <section class="grid">
-    <div class="card profile-card">
-      <div class="profile-top">
-        <div class="avatar">{initials}</div>
+          <h1 class="mt-1 text-[clamp(1.4rem,4vw,3rem)] font-bold leading-[0.95] text-white">
+            Player Dashboard
+          </h1>
 
-        <div class="profile-info">
-          <h2>{profile.username ?? "Not set"}</h2>
-          <p class="muted">{profile.email ?? "No email found"}</p>
+          <p class="mt-2 max-w-xl text-[0.8rem] leading-6 text-white/70 sm:text-sm lg:text-base">
+            Track your profile, monitor your match stats, and jump into a new game in one click.
+          </p>
+        </div>
+
+        <div class="inline-flex shrink-0 items-center gap-2 self-start rounded-full border border-white/10 bg-white/5 px-3 py-2 text-[0.72rem] font-medium text-white/90 backdrop-blur-xl sm:px-4 sm:text-sm">
+          <span class="h-2.5 w-2.5 rounded-full bg-emerald-400 shadow-[0_0_12px_rgba(74,222,128,.8)]"></span>
+          <span>Ready to play</span>
+        </div>
+      </div>
+    </section>
+
+    <section class="grid min-h-0 flex-1 gap-3 lg:grid-cols-[1.15fr_0.95fr]">
+      <div class="min-h-0 rounded-[2rem] border border-white/15 bg-white/10 p-4 shadow-2xl backdrop-blur-2xl sm:p-5">
+        <div class="flex h-full min-h-0 flex-col">
+          <div class="flex items-center gap-3 sm:gap-4">
+            <div class="grid h-14 w-14 shrink-0 place-items-center rounded-2xl bg-gradient-to-br from-indigo-300 to-emerald-300 text-base font-extrabold tracking-wider text-slate-900 shadow-lg sm:h-16 sm:w-16 sm:text-lg">
+              {initials}
+            </div>
+
+            <div class="min-w-0">
+              <h2 class="truncate text-[clamp(1.15rem,2.6vw,1.75rem)] font-bold text-white">
+                {profile.username ?? "Not set"}
+              </h2>
+              <p class="truncate text-[0.8rem] text-white/60 sm:text-sm">
+                {profile.email ?? "No email found"}
+              </p>
+            </div>
+          </div>
+
+          <div class="my-4 h-px shrink-0 bg-white/10"></div>
+
+          <div class="grid min-h-0 flex-1 grid-cols-2 gap-3">
+            <div class="flex min-h-0 flex-col justify-between rounded-2xl border border-white/10 bg-white/5 p-3 backdrop-blur-xl sm:p-4">
+              <span class="text-[0.68rem] uppercase tracking-wide text-white/60 sm:text-xs">
+                Joined
+              </span>
+
+              <strong class="mt-2 block text-[clamp(1rem,2.1vw,1.25rem)] font-semibold text-white">
+                {joinedDate}
+              </strong>
+            </div>
+
+            <div class="flex min-h-0 flex-col justify-between rounded-2xl border border-white/10 bg-white/5 p-3 backdrop-blur-xl sm:p-4">
+              <span class="text-[0.68rem] uppercase tracking-wide text-white/60 sm:text-xs">
+                Completion Rate
+              </span>
+
+              <strong class="mt-2 block text-[clamp(1rem,2.1vw,1.25rem)] font-semibold text-white">
+                {completionRate}%
+              </strong>
+            </div>
+          </div>
         </div>
       </div>
 
-      <div class="divider"></div>
+      <div class="grid min-h-0 gap-3 grid-cols-2 sm:grid-cols-3 lg:grid-cols-2">
+        <div class="flex min-h-0 flex-col justify-between rounded-[1.75rem] border border-white/15 bg-white/10 p-4 backdrop-blur-2xl sm:p-5">
+          <span class="text-[0.8rem] text-white/60 sm:text-sm">
+            Total Games
+          </span>
 
-      <div class="profile-meta">
-        <div class="meta-box">
-          <span class="label">Joined</span>
-          <strong>{joinedDate}</strong>
+          <strong class="text-[clamp(1.8rem,4vw,2.8rem)] font-bold leading-none text-white">
+            {stats.totalGames ?? 0}
+          </strong>
         </div>
 
-        <div class="meta-box">
-          <span class="label">Completion Rate</span>
-          <strong>{completionRate}%</strong>
+        <div class="flex min-h-0 flex-col justify-between rounded-[1.75rem] border border-white/15 bg-white/10 p-4 backdrop-blur-2xl sm:p-5">
+          <span class="text-[0.8rem] text-white/60 sm:text-sm">
+            Finished Games
+          </span>
+
+          <strong class="text-[clamp(1.8rem,4vw,2.8rem)] font-bold leading-none text-white">
+            {stats.finished ?? 0}
+          </strong>
+        </div>
+
+        <div class="col-span-2 flex min-h-0 flex-col justify-between rounded-[1.75rem] border border-white/15 bg-gradient-to-br from-emerald-400/10 to-transparent p-4 backdrop-blur-2xl sm:col-span-3 sm:p-5 lg:col-span-2">
+          <span class="text-[0.8rem] text-white/60 sm:text-sm">
+            Win Progress
+          </span>
+
+          <strong class="text-[clamp(1.8rem,4vw,2.8rem)] font-bold leading-none text-emerald-300">
+            {completionRate}%
+          </strong>
         </div>
       </div>
-    </div>
+    </section>
 
-    <div class="stats-panel">
-      <div class="card stat-card">
-        <span class="stat-label">Total Games</span>
-        <strong class="stat-value">{stats.totalGames ?? 0}</strong>
+    <section class="rounded-[2rem] border border-white/15 bg-white/10 p-4 shadow-2xl backdrop-blur-2xl sm:p-5">
+      <div class="flex h-full min-h-0 flex-col gap-4 lg:flex-row lg:items-center lg:justify-between">
+        <div class="min-w-0">
+          <h3 class="text-[clamp(1.05rem,2.4vw,1.5rem)] font-bold text-white">
+            Start a new match
+          </h3>
+
+          <p class="mt-2 text-[0.8rem] text-white/65 sm:text-sm">
+            Choose a mode and get into the game instantly.
+          </p>
+        </div>
+
+        <div class="grid w-full gap-2 sm:grid-cols-3 lg:max-w-136">
+          <a
+            href="/modes"
+            class="rounded-2xl bg-linear-to-br from-indigo-300 to-emerald-300 px-4 py-2.5 text-center text-[0.8rem] font-semibold text-slate-900 shadow-lg transition hover:-translate-y-0.5 hover:shadow-xl sm:px-5 sm:text-sm"
+          >
+            Create Game
+          </a>
+
+          <a
+            href="/join"
+            class="rounded-2xl border border-white/15 bg-white/5 px-4 py-2.5 text-center text-[0.8rem] font-semibold text-white backdrop-blur-xl transition hover:-translate-y-0.5 hover:bg-white/10 sm:px-5 sm:text-sm"
+          >
+            Join Game
+          </a>
+
+          <button
+            type="button"
+            on:click={handleLogout}
+            class="rounded-2xl border border-red-400/20 bg-red-500/10 px-4 py-2.5 text-[0.8rem] font-semibold text-red-200 backdrop-blur-xl transition hover:-translate-y-0.5 hover:bg-red-500/20 sm:px-5 sm:text-sm"
+          >
+            Logout
+          </button>
+        </div>
       </div>
-
-      <div class="card stat-card">
-        <span class="stat-label">Finished Games</span>
-        <strong class="stat-value">{stats.finished ?? 0}</strong>
-      </div>
-
-      <div class="card stat-card accent">
-        <span class="stat-label">Win Progress</span>
-        <strong class="stat-value">{completionRate}%</strong>
-      </div>
-    </div>
-  </section>
-
-  <section class="card actions-card">
-    <div class="actions-copy">
-      <h3>Start a new match</h3>
-      <p>Choose a mode and get into the game instantly.</p>
-    </div>
-
-    <div class="actions">
-      <a href="/modes" class="btn primary">Create Game</a>
-  <a href="/join" class="btn secondary">Join Game</a>
-  <button class="btn logout" on:click={handleLogout}>Logout</button>
-      <!-- <a href="/modes" class="btn primary">Create Game</a>
-      <a href="/join" class="btn secondary">Join Game</a> -->
-    </div>
-  </section>
+    </section>
+  </main>
 </div>
 
 <style>
-:global(body) {
-  margin: 0;
-  min-height: 100vh;
-  color: #f5f7fb;
-  position: relative;
-  overflow-x: hidden;
-  background:
-    radial-gradient(circle at 15% 20%, rgba(255, 255, 255, 0.18) 0 1px, transparent 1.5px),
-    radial-gradient(circle at 80% 30%, rgba(255, 255, 255, 0.14) 0 1px, transparent 1.5px),
-    radial-gradient(circle at 40% 70%, rgba(255, 255, 255, 0.12) 0 1px, transparent 1.5px),
-    radial-gradient(circle at 65% 15%, rgba(120, 140, 255, 0.18), transparent 22%),
-    radial-gradient(circle at 25% 85%, rgba(93, 242, 194, 0.10), transparent 20%),
-    linear-gradient(180deg, #090f1d 0%, #050816 55%, #02040a 100%);
-  background-size: 320px 320px, 420px 420px, 280px 280px, auto, auto, auto;
-  font-family:
-    Inter, ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
-}
-
-:global(body)::before {
-  content: "";
-  position: fixed;
-  inset: 0;
-  pointer-events: none;
-  background:
-    radial-gradient(circle at 10% 15%, rgba(255, 255, 255, 0.9) 0 0.8px, transparent 1px),
-    radial-gradient(circle at 30% 40%, rgba(255, 255, 255, 0.7) 0 0.8px, transparent 1px),
-    radial-gradient(circle at 55% 25%, rgba(255, 255, 255, 0.85) 0 0.8px, transparent 1px),
-    radial-gradient(circle at 75% 60%, rgba(255, 255, 255, 0.75) 0 0.8px, transparent 1px),
-    radial-gradient(circle at 90% 20%, rgba(255, 255, 255, 0.8) 0 0.8px, transparent 1px),
-    radial-gradient(circle at 20% 75%, rgba(255, 255, 255, 0.65) 0 0.8px, transparent 1px);
-  background-size: 250px 250px, 320px 320px, 380px 380px, 420px 420px, 280px 280px, 360px 360px;
-  opacity: 0.65;
-}
-
-:global(body)::after {
-  content: "";
-  position: fixed;
-  inset: 0;
-  pointer-events: none;
-  background: radial-gradient(circle at center, transparent 0 55%, rgba(0, 0, 0, 0.28) 100%);
-}
-
-  .page {
-    width: min(1120px, calc(100% - 32px));
-    margin: 0 auto;
-    padding: 24px 0 40px;
-  }
-
-  .hero {
-    display: flex;
-    justify-content: space-between;
-    align-items: flex-start;
-    gap: 16px;
-    margin-bottom: 20px;
-  }
-
-  .hero-copy {
-    min-width: 0;
-  }
-
-  .eyebrow {
-    margin: 0 0 8px;
-    font-size: 0.78rem;
-    letter-spacing: 0.16em;
-    text-transform: uppercase;
-    color: #8ea4ff;
-  }
-
-  h1 {
+  :global(html),
+  :global(body),
+  :global(#app) {
+    width: 100%;
+    height: 100%;
     margin: 0;
-    font-size: clamp(2rem, 4vw, 3.2rem);
-    line-height: 1.05;
   }
 
-  .subtext {
-    margin: 10px 0 0;
-    max-width: 58ch;
-    color: rgba(245, 247, 251, 0.72);
-    line-height: 1.6;
+  :global(body) {
+    overflow: hidden;
   }
-
-  .hero-badge {
-    display: inline-flex;
-    align-items: center;
-    gap: 10px;
-    padding: 10px 14px;
-    border: 1px solid rgba(255, 255, 255, 0.08);
-    border-radius: 999px;
-    background: rgba(255, 255, 255, 0.05);
-    backdrop-filter: blur(12px);
-    color: rgba(245, 247, 251, 0.9);
-    white-space: nowrap;
-    flex-shrink: 0;
-  }
-
-  .badge-dot {
-    width: 10px;
-    height: 10px;
-    border-radius: 999px;
-    background: #39d98a;
-    box-shadow: 0 0 0 6px rgba(57, 217, 138, 0.14);
-  }
-
-  .grid {
-    display: grid;
-    grid-template-columns: 1.15fr 0.95fr;
-    gap: 16px;
-    margin-bottom: 16px;
-  }
-
-.card {
-  position: relative;
-  overflow: hidden;
-  border-radius: 24px;
-  border: 1px solid rgba(255, 255, 255, 0.16);
-  background: linear-gradient(
-    135deg,
-    rgba(255, 255, 255, 0.14),
-    rgba(255, 255, 255, 0.06)
-  );
-  backdrop-filter: blur(22px) saturate(160%);
-  -webkit-backdrop-filter: blur(22px) saturate(160%);
-  box-shadow:
-    0 18px 50px rgba(0, 0, 0, 0.35),
-    inset 0 1px 0 rgba(255, 255, 255, 0.18);
-}
-
-.card::before {
-  content: "";
-  position: absolute;
-  inset: 0;
-  background: linear-gradient(
-    135deg,
-    rgba(255, 255, 255, 0.16),
-    rgba(255, 255, 255, 0.05) 35%,
-    transparent 70%
-  );
-  pointer-events: none;
-}
-
-.card > * {
-  position: relative;
-  z-index: 1;
-}
-
-.profile-card {
-  padding: 20px;
-  border-radius: 24px;
-}
-
-.meta-box,
-.stat-card {
-  position: relative;
-  overflow: hidden;
-  border-radius: 18px;
-  background: linear-gradient(
-    135deg,
-    rgba(255, 255, 255, 0.10),
-    rgba(255, 255, 255, 0.04)
-  );
-  border: 1px solid rgba(255, 255, 255, 0.12);
-  backdrop-filter: blur(16px) saturate(150%);
-  -webkit-backdrop-filter: blur(16px) saturate(150%);
-}
-
-.meta-box::before,
-.stat-card::before {
-  content: "";
-  position: absolute;
-  inset: 0;
-  background: linear-gradient(
-    135deg,
-    rgba(255, 255, 255, 0.16),
-    transparent 55%
-  );
-  pointer-events: none;
-}
-
-.meta-box > *,
-.stat-card > * {
-  position: relative;
-  z-index: 1;
-}
-
-@media (max-width: 640px) {
-  .page {
-    width: 100%;
-    padding: 14px 12px 24px;
-    box-sizing: border-box;
-  }
-
-  .card {
-    border-radius: 20px;
-  }
-
-  .profile-card {
-    padding: 16px;
-    border-radius: 20px;
-  }
-
-  .meta-box,
-  .stat-card {
-    border-radius: 16px;
-  }
-
-  .actions-card {
-    padding: 16px;
-    border-radius: 20px;
-  }
-
-  .actions {
-    flex-direction: column;
-    width: 100%;
-  }
-
-  .btn {
-    width: 100%;
-    min-width: 0;
-  }
-}
-
-.card::before {
-  content: "";
-  position: absolute;
-  inset: 0;
-  background: linear-gradient(
-    135deg,
-    rgba(255, 255, 255, 0.22),
-    rgba(255, 255, 255, 0.04) 35%,
-    transparent 70%
-  );
-  pointer-events: none;
-}
-
-.card > * {
-  position: relative;
-  z-index: 1;
-}
-
-  .profile-card {
-    padding: 20px;
-  }
-
-  .profile-top {
-    display: flex;
-    align-items: center;
-    gap: 14px;
-  }
-
-  .avatar {
-    width: 64px;
-    height: 64px;
-    border-radius: 18px;
-    display: grid;
-    place-items: center;
-    font-weight: 800;
-    font-size: 1.1rem;
-    letter-spacing: 0.06em;
-    color: #08111f;
-    background: linear-gradient(135deg, #8ea4ff, #5df2c2);
-    box-shadow: 0 10px 24px rgba(93, 242, 194, 0.18);
-    flex: 0 0 auto;
-  }
-
-  .profile-info {
-    min-width: 0;
-  }
-
-  h2 {
-    margin: 0;
-    font-size: 1.35rem;
-    word-break: break-word;
-  }
-
-  .muted {
-    margin: 6px 0 0;
-    color: rgba(245, 247, 251, 0.68);
-    word-break: break-word;
-  }
-
-  .divider {
-    height: 1px;
-    margin: 18px 0;
-    background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.12), transparent);
-  }
-
-  .profile-meta {
-    display: grid;
-    grid-template-columns: repeat(2, minmax(0, 1fr));
-    gap: 14px;
-  }
-
-.meta-box,
-.stat-card {
-  background: linear-gradient(
-    135deg,
-    rgba(255, 255, 255, 0.10),
-    rgba(255, 255, 255, 0.04)
-  );
-  border: 1px solid rgba(255, 255, 255, 0.14);
-  backdrop-filter: blur(18px) saturate(150%);
-  -webkit-backdrop-filter: blur(18px) saturate(150%);
-}
-
-  .label {
-    display: block;
-    margin-bottom: 6px;
-    font-size: 0.82rem;
-    color: rgba(245, 247, 251, 0.56);
-  }
-
-.profile-meta {
-  display: grid;
-  grid-template-columns: repeat(2, minmax(0, 1fr));
-  gap: 14px;
-}
-
-.meta-box {
-  position: relative;
-  overflow: hidden;
-  min-height: 96px;
-  padding: 16px 14px;
-  border-radius: 18px;
-  display: flex;
-  flex-direction: column;
-  justify-content: flex-start;
-  gap: 8px;
-  background: linear-gradient(
-    135deg,
-    rgba(255, 255, 255, 0.10),
-    rgba(255, 255, 255, 0.04)
-  );
-  border: 1px solid rgba(255, 255, 255, 0.12);
-  backdrop-filter: blur(16px) saturate(150%);
-  -webkit-backdrop-filter: blur(16px) saturate(150%);
-}
-
-.meta-box::before {
-  content: "";
-  position: absolute;
-  inset: 0;
-  background: linear-gradient(135deg, rgba(255, 255, 255, 0.14), transparent 55%);
-  pointer-events: none;
-}
-
-.meta-box > * {
-  position: relative;
-  z-index: 1;
-}
-
-.label {
-  display: block;
-  margin: 0;
-  font-size: 0.82rem;
-  line-height: 1.2;
-  color: rgba(245, 247, 251, 0.72);
-}
-
-.meta-box strong {
-  display: block;
-  margin: 0;
-  font-size: 1.1rem;
-  line-height: 1.25;
-  color: #f5f7fb;
-  word-break: break-word;
-}
-
-@media (max-width: 640px) {
-  .profile-meta {
-    grid-template-columns: 1fr;
-  }
-
-  .meta-box {
-    min-height: 88px;
-    padding: 14px 12px;
-    border-radius: 16px;
-  }
-
-  .label {
-    font-size: 0.78rem;
-  }
-
-  .meta-box strong {
-    font-size: 1rem;
-  }
-}
-
-  .stats-panel {
-    display: grid;
-    grid-template-columns: repeat(2, minmax(0, 1fr));
-    gap: 16px;
-  }
-
-.stat-card {
-  min-height: 126px;
-  padding: 18px;
-  display: flex;
-  flex-direction: column;
-  justify-content: space-between;
-  background: rgba(10, 16, 29, 0.38);
-  backdrop-filter: blur(18px);
-  -webkit-backdrop-filter: blur(18px);
-}
-
-  .stat-card.accent {
-    background:
-      radial-gradient(circle at top right, rgba(93, 242, 194, 0.14), transparent 38%),
-      rgba(10, 16, 29, 0.78);
-  }
-
-  .stat-label {
-    color: rgba(245, 247, 251, 0.66);
-    font-size: 0.9rem;
-  }
-
-  .stat-value {
-    font-size: 2rem;
-    line-height: 1;
-  }
-
-  .actions-card {
-    padding: 18px 20px;
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    gap: 16px;
-  }
-
-  .actions-copy h3 {
-    margin: 0;
-    font-size: 1.15rem;
-  }
-
-  .actions-copy p {
-    margin: 6px 0 0;
-    color: rgba(245, 247, 251, 0.68);
-  }
-
-  .actions {
-    display: flex;
-    gap: 12px;
-    flex-wrap: wrap;
-    justify-content: flex-end;
-  }
-
-  .btn {
-    min-width: 140px;
-    padding: 12px 16px;
-    border-radius: 14px;
-    text-align: center;
-    text-decoration: none;
-    font-weight: 700;
-    transition:
-      transform 0.18s ease,
-      box-shadow 0.18s ease,
-      background 0.18s ease,
-      border-color 0.18s ease;
-  }
-
-  .btn:hover {
-    transform: translateY(-1px);
-  }
-
-  .primary {
-    color: #08111f;
-    background: linear-gradient(135deg, #8ea4ff, #5df2c2);
-    box-shadow: 0 12px 30px rgba(93, 242, 194, 0.16);
-  }
-
-  .secondary {
-    color: #f5f7fb;
-    background: rgba(255, 255, 255, 0.04);
-    border: 1px solid rgba(255, 255, 255, 0.1);
-  }
-
-  .secondary:hover {
-    background: rgba(255, 255, 255, 0.08);
-  }
-
-  @media (max-width: 900px) {
-    .grid {
-      grid-template-columns: 1fr;
-    }
-
-    .stats-panel {
-      grid-template-columns: repeat(3, minmax(0, 1fr));
-    }
-
-    .actions-card {
-      flex-direction: column;
-      align-items: stretch;
-    }
-
-    .actions {
-      justify-content: stretch;
-    }
-
-    .btn {
-      flex: 1;
-    }
-  }
-
-@media (max-width: 640px) {
-  .page {
-    width: 100%;
-    padding: 10px;
-    box-sizing: border-box;
-  }
-
-  /* Hero */
-  .hero {
-    margin-bottom: 10px;
-    gap: 8px;
-  }
-
-  .eyebrow {
-    font-size: 0.65rem;
-    margin-bottom: 4px;
-  }
-
-  h1 {
-    font-size: 1.45rem;
-  }
-
-  .subtext {
-    display: none;
-  }
-
-  .hero-badge {
-    padding: 6px 10px;
-    font-size: 0.75rem;
-  }
-
-  /* Layout */
-  .grid {
-    grid-template-columns: 1fr;
-    gap: 10px;
-    margin-bottom: 10px;
-  }
-
-  .card {
-    border-radius: 16px;
-  }
-
-  .profile-card,
-  .actions-card {
-    padding: 12px;
-  }
-
-  /* Profile */
-  .profile-top {
-    gap: 10px;
-    align-items: center;
-  }
-
-  .avatar {
-    width: 46px;
-    height: 46px;
-    border-radius: 12px;
-    font-size: 0.95rem;
-  }
-
-  h2 {
-    font-size: 1rem;
-  }
-
-  .muted {
-    font-size: 0.78rem;
-    margin-top: 2px;
-  }
-
-  .divider {
-    margin: 10px 0;
-  }
-
-  .profile-meta {
-    grid-template-columns: repeat(2, 1fr);
-    gap: 8px;
-  }
-
-  .meta-box {
-    min-height: 64px;
-    padding: 10px;
-    border-radius: 12px;
-  }
-
-  .label {
-    font-size: 0.68rem;
-    margin-bottom: 3px;
-  }
-
-  .meta-box strong {
-    font-size: 0.82rem;
-  }
-
-  /* Stats */
-  .stats-panel {
-    grid-template-columns: repeat(3, 1fr);
-    gap: 8px;
-  }
-
-  .stat-card {
-    min-height: 82px;
-    padding: 10px;
-    border-radius: 12px;
-  }
-
-  .stat-label {
-    font-size: 0.68rem;
-  }
-
-  .stat-value {
-    font-size: 1.25rem;
-  }
-
-  /* Actions */
-  .actions-card {
-    gap: 10px;
-  }
-
-  .actions-copy h3 {
-    font-size: 0.95rem;
-  }
-
-  .actions-copy p {
-    display: none;
-  }
-
-  .actions {
-    display: grid;
-    grid-template-columns: repeat(3, 1fr);
-    gap: 8px;
-  }
-
-  .btn {
-    min-width: 0;
-    width: 100%;
-    padding: 10px 4px;
-    font-size: 0.75rem;
-    border-radius: 10px;
-  }
-
-  .logout {
-    color: #f5f7fb;
-    background: rgba(255, 80, 80, 0.12);
-    border: 1px solid rgba(255, 120, 120, 0.25);
-  }
-}
 </style>

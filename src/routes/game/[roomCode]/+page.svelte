@@ -4,8 +4,11 @@
 
   export let data: any;
 
+  const game = data.game;
+
   let channel: any;
   const boardSize: number = data?.game?.boardSize ?? 3;
+  const gameBaseUrl = `/api/game/${game.roomCode}`;
 
   function buildBoard(moves: any[] = [], size: number) {
     const nextBoard: string[][] = Array.from({ length: size }, () =>
@@ -24,34 +27,49 @@
     return nextBoard;
   }
 
-  const me = data?.game?.players?.find(
-    (p: any) => p.userId === data?.game?.currentUserId
-  );
+  function getPlayer(symbol: 'X' | 'O') {
+    return game?.players?.find((player: any) => player.symbol === symbol);
+  }
 
-  const mySymbol = me?.symbol ?? '?';
+  function getPlayerName(player: any, fallback: string) {
+    return `${player?.user?.id === game.currentUserId ? '*' : ''}${
+      player?.user?.username ?? fallback
+    }`;
+  }
 
-  $: playerX = data?.game?.players?.find((p: any) => p.symbol === 'X');
-  $: playerO = data?.game?.players?.find((p: any) => p.symbol === 'O');
+  function applyGameState(nextGame: any) {
+    game.currentTurn = nextGame.currentTurn;
+    game.status = nextGame.status;
+    game.players = nextGame.players;
+    game.moves = nextGame.moves ?? [];
 
-  let board: string[][] = buildBoard(data?.game?.moves ?? [], boardSize);
-  let message = 'Game in progress';
+    board = buildBoard(game.moves, boardSize);
 
-  async function reloadGame() {
-    const res = await fetch(`/api/game/${data.game.roomCode}?t=${Date.now()}`);
-    if (!res.ok) return;
-
-    const game = await res.json();
-
-    data.game.currentTurn = game.currentTurn;
-    data.game.status = game.status;
-    data.game.players = game.players;
-    data.game.moves = game.moves ?? [];
-
-    if (game.status !== 'finished') {
+    if (nextGame.status !== 'finished') {
       message = 'Game in progress';
     }
+  }
 
-    board = buildBoard(game.moves ?? [], boardSize);
+  function setWinnerMessage(winner: string) {
+    message = winner === mySymbol ? '🏆 You Win!' : '😢 Opponent Wins!';
+  }
+
+  const mySymbol =
+    game?.players?.find((player: any) => player.userId === game.currentUserId)?.symbol ?? '?';
+
+  $: playerX = getPlayer('X');
+  $: playerO = getPlayer('O');
+
+  let board: string[][] = buildBoard(game?.moves ?? [], boardSize);
+  let message = 'Game in progress';
+
+  let showBackground = false;
+
+  async function reloadGame() {
+    const res = await fetch(`${gameBaseUrl}?t=${Date.now()}`);
+    if (!res.ok) return;
+
+    applyGameState(await res.json());
   }
 
   async function handleClick(r: number, c: number) {
@@ -59,7 +77,7 @@
 
     const cell = r * boardSize + c;
 
-    const res = await fetch(`/api/game/${data.game.roomCode}/move`, {
+    const res = await fetch(`${gameBaseUrl}/move`, {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json'
@@ -83,13 +101,13 @@
     });
 
     if (result.winner) {
-      message = '🏆 You Win!';
-      data.game.status = 'finished';
+      setWinnerMessage(result.winner);
+      game.status = 'finished';
     }
   }
 
   async function restart() {
-    const res = await fetch(`/api/game/${data.game.roomCode}/restart`, {
+    const res = await fetch(`${gameBaseUrl}/restart`, {
       method: 'POST'
     });
 
@@ -110,17 +128,13 @@
   }
 
   onMount(() => {
-    channel = supabase.channel(`game-${data.game.roomCode}`);
+    channel = supabase.channel(`game-${game.roomCode}`);
 
     channel.on('broadcast', { event: 'move-made' }, async (payload: any) => {
       await reloadGame();
 
       if (payload.payload.winner) {
-        if (payload.payload.winner === mySymbol) {
-          message = '🏆 You Win!';
-        } else {
-          message = '😢 Opponent Wins!';
-        }
+        setWinnerMessage(payload.payload.winner);
       }
     });
 
@@ -141,64 +155,226 @@
   <title>Tic Tac Toe Arena</title>
 </svelte:head>
 
-<div class="page">
-  <img class="bg-image" src="/img/game-bg.png" alt="" aria-hidden="true" />
-  <div class="bg-tint"></div>
+<div class="relative min-h-dvh overflow-hidden text-[#f5f1ff] [font-family:Inter,ui-sans-serif,system-ui,-apple-system,BlinkMacSystemFont,'Segoe_UI',sans-serif]">
+  {#if showBackground}
+    <img class="pointer-events-none fixed inset-0 z-0 h-full w-full object-cover object-center" src="/img/game-bg.png" alt="" aria-hidden="true" />
+  {/if}
 
-  <main class="shell">
-    <header class="topbar card">
-      <div class="title-block">
-        <p class="eyebrow">TIC-TAC-TOE ARENA</p>
-        <h1>Room: {data.game.roomCode}</h1>
+  <div class="pointer-events-none fixed inset-0 z-[1] bg-[linear-gradient(180deg,rgba(6,8,18,0.12)_0%,rgba(6,8,18,0.18)_40%,rgba(6,8,18,0.28)_100%)]"></div>
+
+  <main class="relative z-[2] mx-auto grid h-dvh w-full max-w-[1180px] min-h-0 grid-rows-[auto_minmax(0,1fr)] gap-[clamp(4px,0.7vh,8px)] px-[clamp(6px,1vh,12px)] py-[clamp(6px,1vh,12px)] overflow-hidden">
+    <section class="relative overflow-hidden rounded-[22px] border border-white/15 bg-[linear-gradient(135deg,rgba(255,255,255,0.18),rgba(255,255,255,0.08))] px-3 py-[10px] shadow-[0_14px_36px_rgba(0,0,0,0.2),inset_0_1px_0_rgba(255,255,255,0.16)] backdrop-blur-[18px] saturate-[160%] sm:px-4">
+      <div class="flex items-center justify-between gap-2">
+
+        <!-- Left -->
+        <div class="flex min-w-0 flex-1 items-center gap-2">
+
+          <div
+            class="grid h-9 w-9 shrink-0 place-items-center rounded-xl border border-[#a777ff]/20 bg-[linear-gradient(180deg,rgba(130,91,255,0.28),rgba(130,91,255,0.12))] text-lg font-extrabold text-[#a777ff] md:h-12 md:w-12 md:text-2xl"
+          >
+            #
+          </div>
+
+          <div class="min-w-0 flex-1">
+
+            <div class="text-[10px] uppercase tracking-wider text-white/60 md:text-xs">
+              Room
+            </div>
+
+            <h1
+              class="truncate text-lg font-black leading-none text-white sm:text-xl md:text-3xl"
+            >
+              {game.roomCode}
+            </h1>
+
+          </div>
+
+        </div>
+
+        <!-- Right -->
+        <div class="flex shrink-0 items-center gap-1.5">
+
+          <div
+            class="inline-flex items-center gap-1 rounded-full border border-white/15 bg-white/10 px-2 py-1 text-[11px] text-white md:px-3 md:py-1.5 md:text-sm"
+          >
+            <span
+              class="h-2 w-2 shrink-0 rounded-full bg-green-500 shadow-[0_0_8px_rgba(34,197,94,.7)] animate-pulse"
+            ></span>
+
+            <span class=" sm:inline">
+              {message}
+            </span>
+          </div>
+
+          <button
+            type="button"
+            on:click={restart}
+            aria-label="Restart"
+            class="grid h-9 w-9 shrink-0 place-items-center rounded-full border border-white/15 bg-white/10 transition hover:bg-white/20"
+          >
+            ↻
+          </button>
+
+          <button
+            type="button"
+            on:click={() => (showBackground = !showBackground)}
+            aria-label="Toggle background"
+            class="grid h-9 w-9 shrink-0 place-items-center rounded-full border border-white/15 bg-white/10 transition hover:bg-white/20"
+          >
+            {showBackground ? '🌙' : '☀️'}
+          </button>
+
+        </div>
+
       </div>
 
-      <div class="status-pill">{message}</div>
-    </header>
+      <div class="mt-[10px] grid grid-cols-[minmax(0,1fr)_auto_minmax(0,1fr)] items-center gap-[14px] sm:gap-3 md:gap-[14px] max-[640px]:flex max-[640px]:items-center max-[640px]:justify-between max-[640px]:gap-[6px]">
+        <div class={`flex min-w-0 items-center gap-[12px] rounded-[22px] border border-white/10 bg-white/[0.035] p-[12px_16px] transition-[border-color,background,box-shadow] duration-200 max-[640px]:flex-1 max-[640px]:gap-2 max-[640px]:rounded-[14px] max-[640px]:p-2 ${game.currentTurn === 'X' ? 'border-[#825bff] bg-[rgba(130,91,255,0.12)] shadow-[inset_0_0_0_1px_rgba(130,91,255,0.55),0_0_18px_rgba(130,91,255,0.28),0_0_42px_rgba(130,91,255,0.18)]' : ''}`}>
+          <div class="grid h-8.5 w-8.5 shrink-0 place-items-center rounded-full bg-[rgba(183,94,119,.12)] text-[1.2rem] font-extrabold text-[#B75E77] sm:h-[38px] sm:w-[38px] sm:text-[1.35rem] md:h-[44px] md:w-[44px] md:text-[1.7rem]">
+            ✕
+          </div>
 
-    <section class="scoreboard card">
-      <div class:active-turn={data.game.currentTurn === 'X'} class="score-item">
-        <span class="score-name">
-          {playerX?.user?.id === data.game.currentUserId ? '*' : ''}
-          {playerX?.user?.username ?? 'Player X'} (X)
-        </span>
-        <span class="score-value">{playerX?.score ?? 0}</span>
-      </div>
+          <div class="min-w-0 flex-1">
+            <div class="flex items-center gap-2 text-[0.88rem] font-bold text-white sm:text-[0.95rem] md:text-[1.05rem] max-[640px]:block max-[640px]:overflow-hidden max-[640px]:whitespace-nowrap max-[640px]:text-ellipsis max-[640px]:text-[0.78rem]">
+              {getPlayerName(playerX, 'Player X')} (X)
 
-      <div class="score-divider">•</div>
+              {#if playerX?.user?.id === game.currentUserId}
+                <span class="ml-2 inline-flex rounded-full bg-[#6c45ff] px-[8px] py-[2px] text-[0.68rem] font-bold text-white sm:px-[10px] sm:py-[4px] sm:text-[0.78rem] max-[640px]:hidden">
+                  You
+                </span>
+              {/if}
+            </div>
+          </div>
 
-      <div class:active-turn={data.game.currentTurn === 'O'} class="score-item">
-        <span class="score-name">
-          {playerO?.user?.id === data.game.currentUserId ? '*' : ''}
-          {playerO?.user?.username ?? 'Player O'} (O)
-        </span>
-        <span class="score-value">{playerO?.score ?? 0}</span>
-      </div>
-    </section>
+          <div class="text-[1.4rem] font-extrabold leading-none text-white sm:text-[1.7rem] md:text-[2.7rem]">
+            {playerX?.score ?? 0}
+          </div>
+        </div>
 
-    <section class="board-area">
-      <div class="board-card card">
-        <div class="board" style={`--size:${boardSize};`}>
-          {#each board as row, r}
-            {#each row as cell, c}
-              <button
-                type="button"
-                on:click={() => handleClick(r, c)}
-                class="cell"
-                aria-label={`Cell ${r + 1}, ${c + 1}`}
-              >
-                {cell}
-              </button>
-            {/each}
-          {/each}
+        <div class="relative grid h-[26px] w-[26px] place-items-center rounded-full border border-white/8 bg-white/[0.04] text-[0.62rem] font-bold text-white/75 sm:h-[28px] sm:w-[28px] sm:text-[0.65rem] md:h-[54px] md:w-[54px] md:text-[0.75rem] max-[640px]:h-[26px] max-[640px]:w-[26px] max-[640px]:before:hidden max-[640px]:after:hidden md:before:absolute md:before:right-full md:before:mr-2 md:before:top-1/2 md:before:h-[2px] md:before:w-[22px] md:before:-translate-y-1/2 md:before:bg-white/12 md:after:absolute md:after:left-full md:after:ml-2 md:after:top-1/2 md:after:h-[2px] md:after:w-[22px] md:after:-translate-y-1/2 md:after:bg-white/12">
+          VS
+        </div>
+
+        <div class={`flex min-w-0 items-center gap-[12px] rounded-[22px] border border-white/10 bg-white/[0.035] p-[12px_16px] transition-[border-color,background,box-shadow] duration-200 max-[640px]:flex-1 max-[640px]:gap-2 max-[640px]:rounded-[14px] max-[640px]:p-2 ${game.currentTurn === 'O' ? 'border-[#825bff] bg-[rgba(130,91,255,0.12)] shadow-[inset_0_0_0_1px_rgba(130,91,255,0.55),0_0_18px_rgba(130,91,255,0.28),0_0_42px_rgba(130,91,255,0.18)]' : ''}`}>
+          <div class="grid h-[34px] w-[34px] shrink-0 place-items-center rounded-full bg-[rgba(176,215,255,.12)] text-[1.2rem] font-extrabold text-[#B0D7FF] sm:h-[38px] sm:w-[38px] sm:text-[1.35rem] md:h-[44px] md:w-[44px] md:text-[1.7rem]">
+            ◯
+          </div>
+
+          <div class="min-w-0 flex-1">
+            <div class="flex items-center gap-2 text-[0.88rem] font-bold text-white sm:text-[0.95rem] md:text-[1.05rem] max-[640px]:block max-[640px]:overflow-hidden max-[640px]:whitespace-nowrap max-[640px]:text-ellipsis max-[640px]:text-[0.78rem]">
+              {getPlayerName(playerO, 'Player O')} (O)
+
+              {#if playerO?.user?.id === game.currentUserId}
+                <span class="ml-2 inline-flex rounded-full bg-[#6c45ff] px-[8px] py-[2px] text-[0.68rem] font-bold text-white sm:px-[10px] sm:py-[4px] sm:text-[0.78rem] max-[640px]:hidden">
+                  You
+                </span>
+              {/if}
+            </div>
+          </div>
+
+          <div class="text-[1.4rem] font-extrabold leading-none text-white sm:text-[1.7rem] md:text-[2.7rem]">
+            {playerO?.score ?? 0}
+          </div>
         </div>
       </div>
     </section>
 
-    <section class="controls">
-      <button type="button" on:click={restart} class="restart-btn">
-        RESTART
-      </button>
-    </section>
+    <section class="flex min-h-0 items-center justify-center">
+
+  <div
+    class="w-full max-w-[min(94vw,94dvh,calc(100svh-210px),560px)]
+           rounded-[28px]
+           border border-white/15
+           bg-white/[0.07]
+           p-3
+           shadow-[0_20px_60px_rgba(0,0,0,.35)]
+           backdrop-blur-2xl
+           max-[640px]:max-w-[min(94vw,calc(100dvh-250px),420px)]
+           max-[640px]:rounded-3xl
+           max-[640px]:p-2.5">
+
+    <div
+      class="grid h-full w-full gap-2"
+      style={`grid-template-columns:repeat(${boardSize},minmax(0,1fr));grid-auto-rows:minmax(0,1fr);`}
+    >
+
+      {#each board as row, r}
+        {#each row as cell, c}
+
+          <button
+            type="button"
+            on:click={() => handleClick(r, c)}
+            aria-label={`Cell ${r + 1}, ${c + 1}`}
+            class={`
+              group
+              relative
+              aspect-square
+              overflow-hidden
+              rounded-2xl
+              border
+              transition-all
+              duration-200
+              active:scale-95
+
+              ${
+                cell === ''
+                  ? `
+                    border-white/10
+                    bg-white/[0.05]
+                    hover:-translate-y-0.5
+                    hover:border-white/20
+                    hover:bg-white/[0.08]
+                    hover:shadow-[0_0_25px_rgba(255,255,255,.06)]
+                  `
+                  : ''
+              }
+
+              ${
+                cell === 'X'
+                  ? `
+                    border-[#B75E77]/70
+                    bg-gradient-to-br
+                    from-[#d57a97]
+                    to-[#9b4962]
+                    shadow-[0_12px_28px_rgba(183,94,119,.35)]
+                  `
+                  : ''
+              }
+
+              ${
+                cell === 'O'
+                  ? `
+                    border-[#B0D7FF]/70
+                    bg-gradient-to-br
+                    from-[#c7e5ff]
+                    to-[#7fb9ff]
+                    shadow-[0_12px_28px_rgba(176,215,255,.35)]
+                  `
+                  : ''
+              }
+            `}
+          >
+
+            <span
+              class="relative z-10 text-[clamp(2.5rem,10vmin,5rem)] font-black leading-none text-white transition-transform duration-200 group-hover:scale-105"
+            >
+              {cell === 'X' ? '✕' : cell === 'O' ? '◯' : ''}
+            </span>
+
+            <span
+              class="pointer-events-none absolute inset-0 rounded-2xl bg-[linear-gradient(135deg,rgba(255,255,255,.14),transparent_65%)]"
+            ></span>
+
+          </button>
+
+        {/each}
+      {/each}
+
+    </div>
+
+  </div>
+
+</section>
   </main>
 </div>
 
@@ -206,9 +382,9 @@
   :global(html),
   :global(body),
   :global(#app) {
-    margin: 0;
     width: 100%;
     height: 100%;
+    margin: 0;
   }
 
   :global(*) {
@@ -218,370 +394,22 @@
   :global(body) {
     overflow: hidden;
     overscroll-behavior: none;
-    color: #f5f1ff;
-    font-family:
-      Inter, ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI",
-      sans-serif;
-    background: #07070a;
   }
 
-  .page {
-    position: relative;
-    width: 100%;
-    height: 100dvh;
-    height: 100svh;
-    overflow: hidden;
-  }
-
-  .bg-image {
-    position: fixed;
-    inset: 0;
-    width: 100%;
-    height: 100%;
-    object-fit: cover;
-    object-position: center center;
-    z-index: 0;
-    pointer-events: none;
-  }
-
-  .bg-tint {
-    position: fixed;
-    inset: 0;
-    z-index: 1;
-    pointer-events: none;
-    background:
-      linear-gradient(
-        180deg,
-        rgba(6, 8, 18, 0.12) 0%,
-        rgba(6, 8, 18, 0.18) 40%,
-        rgba(6, 8, 18, 0.28) 100%
-      );
-  }
-
-  .shell {
-    position: relative;
-    z-index: 2;
-    width: min(1180px, 100%);
-    height: 100%;
-    margin: 0 auto;
-    padding: clamp(6px, 1vh, 12px);
-    display: grid;
-    grid-template-rows: auto auto minmax(0, 1fr) auto;
-    gap: clamp(4px, 0.7vh, 8px);
-    min-height: 0;
-  }
-
-  .card {
-    position: relative;
-    overflow: hidden;
-    border-radius: 22px;
-    border: 1px solid rgba(255, 255, 255, 0.16);
-    background: linear-gradient(
-      135deg,
-      rgba(255, 255, 255, 0.18),
-      rgba(255, 255, 255, 0.08)
-    );
-    backdrop-filter: blur(18px) saturate(160%);
-    -webkit-backdrop-filter: blur(18px) saturate(160%);
-    box-shadow:
-      0 14px 36px rgba(0, 0, 0, 0.2),
-      inset 0 1px 0 rgba(255, 255, 255, 0.16);
-  }
-
-  .card::before {
-    content: "";
-    position: absolute;
-    inset: 0;
-    pointer-events: none;
-    background: linear-gradient(
-      135deg,
-      rgba(255, 255, 255, 0.16),
-      rgba(255, 255, 255, 0.04) 35%,
-      transparent 70%
-    );
-  }
-
-  .topbar {
-    padding: clamp(8px, 1vh, 12px) clamp(12px, 1.4vw, 16px);
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    gap: 12px;
-  }
-
-  .title-block {
-    min-width: 0;
-  }
-
-  .eyebrow {
-    margin: 0 0 4px;
-    letter-spacing: 0.18em;
-    font-size: 0.72rem;
-    color: rgba(245, 241, 255, 0.75);
-  }
-
-  h1 {
-    margin: 0;
-    font-size: clamp(1.15rem, 2vw, 1.55rem);
-    line-height: 1.1;
-    color: #fffaf1;
-    word-break: break-word;
-  }
-
-  .status-pill {
-    padding: 9px 14px;
-    border-radius: 999px;
-    font-size: 0.92rem;
-    color: #fffaf1;
-    background: rgba(255, 255, 255, 0.10);
-    border: 1px solid rgba(255, 255, 255, 0.14);
-    white-space: nowrap;
-    flex-shrink: 0;
-  }
-
-  .scoreboard {
-    padding: 10px 12px;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    gap: 14px;
-  }
-
-  .score-item {
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    gap: 4px;
-    text-align: center;
-    min-width: 0;
-    color: rgba(245, 241, 255, 0.88);
-  }
-
-  .score-name {
-    font-size: clamp(0.82rem, 1.3vw, 0.98rem);
-    line-height: 1.2;
-    word-break: break-word;
-  }
-
-  .score-value {
-    font-size: clamp(1rem, 1.6vw, 1.2rem);
-    font-weight: 800;
-    color: #fffdf3;
-  }
-
-  .score-divider {
-    color: rgba(245, 241, 255, 0.48);
-    font-size: 1.2rem;
-  }
-
-  .active-turn .score-name,
-  .active-turn .score-value {
-    color: #ffffff;
-    text-shadow: 0 0 10px rgba(199, 185, 255, 0.24);
-  }
-
-  .board-area {
-    min-height: 0;
-    display: grid;
-    place-items: center;
-    align-self: stretch;
-  }
-
-.board-card {
-  width: min(94vw, 94dvh, calc(100svh - 220px), 560px);
-  aspect-ratio: 1 / 1;
-  padding: clamp(8px, 1vw, 12px);
-  display: grid;
-  place-items: stretch;
-}
-
-.board {
-  --size: 3;
-  width: 100%;
-  height: 100%;
-  display: grid;
-  grid-template-columns: repeat(var(--size), minmax(0, 1fr));
-  grid-auto-rows: minmax(0, 1fr);
-  gap: clamp(6px, 1vw, 10px);
-  align-items: stretch;
-  justify-items: stretch;
-}
-
-.cell {
-  position: relative;
-  overflow: hidden;
-  width: 100%;
-  height: 100%;
-  min-width: 0;
-  min-height: 0;
-  aspect-ratio: 1 / 1;
-  padding: 0;
-  appearance: none;
-  -webkit-appearance: none;
-  box-sizing: border-box;
-  border: 1px solid rgba(255, 255, 255, 0.18);
-  border-radius: clamp(12px, 1.3vw, 18px);
-  background: linear-gradient(
-    135deg,
-    rgba(255, 255, 255, 0.13),
-    rgba(255, 255, 255, 0.06)
-  );
-  backdrop-filter: blur(14px) saturate(150%);
-  -webkit-backdrop-filter: blur(14px) saturate(150%);
-  color: #fff8e8;
-  font-size: clamp(2.6rem, 10vmin, 5.2rem);
-  font-weight: 900;
-  line-height: 1;
-  cursor: pointer;
-  display: grid;
-  place-items: center;
-  transition:
-    transform 0.16s ease,
-    background 0.16s ease,
-    box-shadow 0.16s ease;
-  -webkit-tap-highlight-color: transparent;
-  font-family: inherit;
-  flex: none;
-}
-
-  .cell::before {
-    content: "";
-    position: absolute;
-    inset: 0;
-    background: linear-gradient(135deg, rgba(255, 255, 255, 0.14), transparent 60%);
-    pointer-events: none;
-  }
-
-  .cell:hover {
-    transform: translateY(-1px);
-    background: linear-gradient(
-      135deg,
-      rgba(255, 255, 255, 0.18),
-      rgba(255, 255, 255, 0.08)
-    );
-    box-shadow: 0 8px 18px rgba(0, 0, 0, 0.14);
-  }
-
-  .controls {
-    display: flex;
-    justify-content: center;
-    align-items: center;
-  }
-
-  .restart-btn {
-    border: 1px solid rgba(255, 255, 255, 0.16);
-    border-radius: 999px;
-    padding: 10px 18px;
-    color: #fff8e8;
-    background: linear-gradient(
-      135deg,
-      rgba(255, 255, 255, 0.14),
-      rgba(255, 255, 255, 0.06)
-    );
-    backdrop-filter: blur(16px) saturate(150%);
-    -webkit-backdrop-filter: blur(16px) saturate(150%);
-    box-shadow:
-      0 10px 26px rgba(0, 0, 0, 0.14),
-      inset 0 1px 0 rgba(255, 255, 255, 0.16);
-    cursor: pointer;
-    font-weight: 700;
-    letter-spacing: 0.08em;
-    transition: transform 0.16s ease, background 0.16s ease;
-    -webkit-tap-highlight-color: transparent;
-    font: inherit;
-  }
-
-  .restart-btn:hover {
-    transform: translateY(-1px);
-    background: linear-gradient(
-      135deg,
-      rgba(255, 255, 255, 0.18),
-      rgba(255, 255, 255, 0.08)
-    );
-  }
-
-  @media (max-width: 640px) {
-    .shell {
-      width: 100%;
-      padding: 6px;
-      gap: 6px;
-      grid-template-rows: auto auto minmax(0, 1fr) auto;
+  @keyframes pulse-dot {
+    0% {
+      transform: scale(1);
+      box-shadow: 0 0 0 0 rgba(34, 197, 94, 0.7);
     }
 
-    .topbar {
-      flex-direction: column;
-      align-items: stretch;
-      text-align: center;
-      padding: 8px 10px;
-      gap: 6px;
-      border-radius: 18px;
+    70% {
+      transform: scale(1.2);
+      box-shadow: 0 0 0 8px rgba(34, 197, 94, 0);
     }
 
-    .eyebrow {
-      display: none;
-    }
-
-    h1 {
-      font-size: clamp(1rem, 4.8vw, 1.3rem);
-    }
-
-    .status-pill {
-      width: 100%;
-      padding: 8px 12px;
-      font-size: 0.9rem;
-    }
-
-    .scoreboard {
-      padding: 8px 10px;
-      gap: 10px;
-      border-radius: 18px;
-    }
-
-    .score-divider {
-      display: none;
-    }
-
-    .score-name {
-      font-size: 0.78rem;
-    }
-
-    .score-value {
-      font-size: 1rem;
-    }
-
-    .board-card {
-      width: min(92vw, calc(100dvh - 215px), 410px);
-      padding: 8px;
-      border-radius: 18px;
-    }
-
-    .board {
-      gap: 6px;
-    }
-
-    .cell {
-      border-radius: 12px;
-      font-size: clamp(2.1rem, 11vmin, 3.2rem);
-    }
-
-    .restart-btn {
-      padding: 9px 16px;
-      font-size: 0.95rem;
-    }
-  }
-
-  @media (max-height: 760px) {
-    .shell {
-      gap: 5px;
-    }
-
-    .topbar,
-    .scoreboard {
-      padding-block: 7px;
-    }
-
-    .board-card {
-      width: min(92vmin, calc(100svh - 230px), 520px);
+    100% {
+      transform: scale(1);
+      box-shadow: 0 0 0 0 rgba(34, 197, 94, 0);
     }
   }
 </style>

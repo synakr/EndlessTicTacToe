@@ -8,7 +8,6 @@ import { onMount } from 'svelte';
 
   let loading = false;
   let errorMsg = '';
-  const butterflies = Array.from({ length: 8 }, (_, i) => i);
 
   type SkeletonItem = {
     x: number;
@@ -25,21 +24,6 @@ import { onMount } from 'svelte';
 
   const rand = (min: number, max: number) => min + Math.random() * (max - min);
   const clamp = (value: number, min: number, max: number) => Math.max(min, Math.min(max, value));
-
-// function getNoFlyZone() {
-//   const rects = [heroBox, formBox, switchBox]
-//     .filter(Boolean)
-//     .map((el) => el!.getBoundingClientRect());
-
-//   if (!rects.length) return null;
-
-//   return {
-//     left: Math.min(...rects.map((r) => r.left)) - 24,
-//     top: Math.min(...rects.map((r) => r.top)) - 24,
-//     right: Math.max(...rects.map((r) => r.right)) + 24,
-//     bottom: Math.max(...rects.map((r) => r.bottom)) + 24
-//   };
-// }
 
   function createSkeletons(width: number, height: number): SkeletonItem[] {
     const base = width < 640 ? 120 : 220;
@@ -169,42 +153,6 @@ function nudgeSkeleton(index: number, event: MouseEvent) {
           rotate -= 4;
         }
 
-// const zone = getNoFlyZone();
-
-// if (zone) {
-//   const cx = x + box / 2;
-//   const cy = y + box / 2;
-
-//   const inside =
-//     cx > zone.left &&
-//     cx < zone.right &&
-//     cy > zone.top &&
-//     cy < zone.bottom;
-
-//   if (inside) {
-//     const distLeft = Math.abs(cx - zone.left);
-//     const distRight = Math.abs(zone.right - cx);
-//     const distTop = Math.abs(cy - zone.top);
-//     const distBottom = Math.abs(zone.bottom - cy);
-
-//     const nearest = Math.min(distLeft, distRight, distTop, distBottom);
-
-//     if (nearest === distLeft) {
-//       x = zone.left - box - 12;
-//       vx = -Math.abs(vx);
-//     } else if (nearest === distRight) {
-//       x = zone.right + 12;
-//       vx = Math.abs(vx);
-//     } else if (nearest === distTop) {
-//       y = zone.top - box - 12;
-//       vy = -Math.abs(vy);
-//     } else {
-//       y = zone.bottom + 12;
-//       vy = Math.abs(vy);
-//     }
-//   }
-// }
-
         return { ...s, x, y, vx, vy, rotate };
       });
 
@@ -227,15 +175,6 @@ function nudgeSkeleton(index: number, event: MouseEvent) {
 
 <div class="page">
   <div class="stars"></div>
-  <div class="nebula nebula-1"></div>
-  <div class="nebula nebula-2"></div>
-  <div class="nebula nebula-3"></div>
-
-  <div class="butterfly-field" aria-hidden="true">
-    {#each butterflies as i}
-      <span class="butterfly b{i + 1}"></span>
-    {/each}
-  </div>
 
   <div class="skeleton-field" aria-hidden="true">
     {#each skeletons as s, i}
@@ -381,40 +320,6 @@ on:click={(e) => nudgeSkeleton(i, e)}
     filter: drop-shadow(0 0 8px rgba(255, 255, 255, 0.15));
   }
 
-  .nebula {
-    position: fixed;
-    inset: auto;
-    z-index: 0;
-    pointer-events: none;
-    filter: blur(26px);
-    opacity: 0.7;
-  }
-
-  .nebula-1 {
-    top: -8%;
-    left: 10%;
-    width: 22rem;
-    height: 22rem;
-    background: radial-gradient(circle, rgba(116, 98, 255, 0.24), transparent 68%);
-  }
-
-  .nebula-2 {
-    top: 18%;
-    right: 8%;
-    width: 18rem;
-    height: 18rem;
-    background: radial-gradient(circle, rgba(255, 122, 179, 0.16), transparent 70%);
-  }
-
-  .nebula-3 {
-    bottom: -8%;
-    left: 28%;
-    width: 24rem;
-    height: 24rem;
-    background: radial-gradient(circle, rgba(106, 231, 203, 0.12), transparent 70%);
-  }
-
-.butterfly-field,
 .skeleton-field {
   position: fixed;
   inset: 0;
@@ -439,56 +344,6 @@ on:click={(e) => nudgeSkeleton(i, e)}
   will-change: transform, top, left;
   z-index: 1;
 }
-  .butterfly {
-    position: absolute;
-    width: 26px;
-    height: 18px;
-    transform-style: preserve-3d;
-    filter: drop-shadow(0 10px 12px rgba(0, 0, 0, 0.25));
-    animation: flutter 10s linear infinite;
-    opacity: 0.92;
-  }
-
-  .butterfly::before,
-  .butterfly::after {
-    content: "";
-    position: absolute;
-    top: 0;
-    width: 50%;
-    height: 100%;
-    border-radius: 100% 0 100% 0;
-    background:
-      radial-gradient(circle at 35% 35%, rgba(255, 255, 255, 0.85), transparent 28%),
-      linear-gradient(145deg, rgba(255, 200, 242, 0.95), rgba(140, 120, 255, 0.72));
-    transform-origin: center right;
-    box-shadow:
-      inset 0 0 12px rgba(255, 255, 255, 0.18),
-      0 0 18px rgba(255, 120, 200, 0.14);
-  }
-
-  .butterfly::after {
-    left: 50%;
-    transform-origin: center left;
-    border-radius: 0 100% 0 100%;
-  }
-
-  .butterfly {
-    transform: translate3d(0, 0, 20px);
-    animation-name: flutter, drift;
-    animation-duration: 1.1s, 14s;
-    animation-timing-function: ease-in-out, linear;
-    animation-iteration-count: infinite, infinite;
-  }
-
-  .butterfly.b1 { top: 16%; left: 12%; animation-delay: 0s, 0s; }
-  .butterfly.b2 { top: 22%; left: 74%; animation-delay: .3s, 1s; }
-  .butterfly.b3 { top: 38%; left: 18%; animation-delay: .6s, 2s; }
-  .butterfly.b4 { top: 48%; left: 86%; animation-delay: .2s, 3s; }
-  .butterfly.b5 { top: 64%; left: 10%; animation-delay: .8s, 4s; }
-  .butterfly.b6 { top: 72%; left: 66%; animation-delay: .1s, 5s; }
-  .butterfly.b7 { top: 80%; left: 28%; animation-delay: .5s, 6s; }
-  .butterfly.b8 { top: 12%; left: 48%; animation-delay: .4s, 1.5s; }
-
 
 .hero {
   position: relative;
@@ -856,21 +711,6 @@ on:click={(e) => nudgeSkeleton(i, e)}
     .cta {
       padding: 13px 14px;
     }
-
-    .butterfly {
-      width: 20px;
-      height: 14px;
-      opacity: 0.65;
-    }
-
-    .butterfly.b1 { top: 12%; left: 8%; }
-    .butterfly.b2 { top: 18%; left: 78%; }
-    .butterfly.b3 { top: 34%; left: 14%; }
-    .butterfly.b4 { top: 46%; left: 86%; }
-    .butterfly.b5 { top: 62%; left: 10%; }
-    .butterfly.b6 { top: 70%; left: 68%; }
-    .butterfly.b7 { top: 78%; left: 24%; }
-    .butterfly.b8 { top: 10%; left: 48%; }
 
     .skeleton-wrap {
   width: 120px;
