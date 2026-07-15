@@ -54,6 +54,24 @@ function buildBoard(moves: any[], boardSize: number): string[][] {
 	return board;
 }
 
+async function getUpdatedGame(id: string) {
+	return prisma.game.findUnique({
+		where: { id },
+		include: {
+			players: {
+				include: {
+					user: true
+				}
+			},
+			moves: {
+				orderBy: {
+					moveNo: 'asc'
+				}
+			}
+		}
+	});
+}
+
 export const POST = async ({ params, request, locals }) => {
 	if (!locals.user) {
 		return json({ error: 'Unauthorized' }, { status: 401 });
@@ -66,7 +84,12 @@ export const POST = async ({ params, request, locals }) => {
 			roomCode: params.roomCode
 		},
 		include: {
-			players: true
+			players: true,
+			moves: {
+				orderBy: {
+					moveNo: 'asc'
+				}
+			}
 		}
 	});
 
@@ -88,25 +111,11 @@ export const POST = async ({ params, request, locals }) => {
 		return json({ error: 'Not your turn' }, { status: 400 });
 	}
 
-	const existingMove = await prisma.move.findFirst({
-		where: {
-			gameId: game.id,
-			cell
-		}
-	});
+	const existingMove = game.moves.find((move) => move.cell === cell);
 
 	if (existingMove) {
 		return json({ error: 'Cell already occupied' }, { status: 400 });
 	}
-
-	const lastMove = await prisma.move.findFirst({
-		where: {
-			gameId: game.id
-		},
-		orderBy: {
-			moveNo: 'desc'
-		}
-	});
 
 	const move = await prisma.move.create({
 		data: {
@@ -114,18 +123,11 @@ export const POST = async ({ params, request, locals }) => {
 			userId: locals.user.id,
 			symbol: player.symbol,
 			cell,
-			moveNo: (lastMove?.moveNo ?? 0) + 1
+			moveNo: game.moves.length + 1
 		}
 	});
 
-	const moves = await prisma.move.findMany({
-		where: {
-			gameId: game.id
-		},
-		orderBy: {
-			moveNo: 'asc'
-		}
-	});
+	const moves = [...game.moves, move];
 
 	const board = buildBoard(moves, game.boardSize);
 
@@ -153,8 +155,10 @@ export const POST = async ({ params, request, locals }) => {
 			}
 		});
 
+		const updatedGame = await getUpdatedGame(game.id);
+
 		return json({
-			move,
+			game: updatedGame,
 			winner
 		});
 	}
@@ -181,8 +185,10 @@ export const POST = async ({ params, request, locals }) => {
 			}
 		});
 
+		const updatedGame = await getUpdatedGame(game.id);
+
 		return json({
-			move,
+			game: updatedGame,
 			winner: null,
 			tieBreakerActivated: true
 		});
@@ -197,8 +203,11 @@ export const POST = async ({ params, request, locals }) => {
 		}
 	});
 
+	const updatedGame = await getUpdatedGame(game.id);
+
 	return json({
-		move,
-		winner: null
+		game: updatedGame,
+		winner: null,
+		tieBreakerActivated: false
 	});
 };

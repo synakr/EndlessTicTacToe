@@ -65,13 +65,6 @@
 
   let showBackground = false;
 
-  async function reloadGame() {
-    const res = await fetch(`${gameBaseUrl}?t=${Date.now()}`);
-    if (!res.ok) return;
-
-    applyGameState(await res.json());
-  }
-
   async function handleClick(r: number, c: number) {
     if (data.game.status === 'finished') return;
 
@@ -88,14 +81,13 @@
     const result = await res.json();
     if (!res.ok) return;
 
-    await reloadGame();
+    applyGameState(result.game);
 
     await channel.send({
       type: 'broadcast',
       event: 'move-made',
       payload: {
-        roomCode: data.game.roomCode,
-        cell,
+        game: result.game,
         winner: result.winner ?? null
       }
     });
@@ -114,13 +106,13 @@
     const result = await res.json();
     if (!res.ok) return;
 
-    await reloadGame();
+    applyGameState(result.game);
 
     await channel.send({
       type: 'broadcast',
       event: 'game-restarted',
       payload: {
-        roomCode: data.game.roomCode
+        game: result.game
       }
     });
 
@@ -130,18 +122,26 @@
   onMount(() => {
     channel = supabase.channel(`game-${game.roomCode}`);
 
-    channel.on('broadcast', { event: 'move-made' }, async (payload: any) => {
-      await reloadGame();
+    channel.on(
+      'broadcast',
+      { event: 'move-made' },
+      (payload: any) => {
+        applyGameState(payload.payload.game);
 
-      if (payload.payload.winner) {
-        setWinnerMessage(payload.payload.winner);
+        if (payload.payload.winner) {
+          setWinnerMessage(payload.payload.winner);
+        }
       }
-    });
+    );
 
-    channel.on('broadcast', { event: 'game-restarted' }, async () => {
-      await reloadGame();
-      message = 'Game in progress';
-    });
+    channel.on(
+      'broadcast',
+      { event: 'game-restarted' },
+      (payload: any) => {
+        applyGameState(payload.payload.game);
+        message = 'Game in progress';
+      }
+    );
 
     channel.subscribe();
 

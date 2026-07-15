@@ -7,41 +7,40 @@ export const POST = async ({ locals, request }) => {
 		return json({ error: 'Unauthorized' }, { status: 401 });
 	}
 
-	const data = await request.json();
-	const { gameMode, boardSize, tieBreaker } = data;
+	const { gameMode, boardSize, tieBreaker } = await request.json();
 
-	let roomCode;
-	let exists = true;
+	let roomCode: string;
 
-	while (exists) {
+	while (true) {
 		roomCode = generateRoomCode();
-		const game = await prisma.game.findUnique({
-			where: { roomCode }
-		});
-		exists = !!game;
-	}
 
-	// Check if user profile exists in database
-	const profile = await prisma.profile.findUnique({
-		where: { id: locals.user.id }
-	});
+		const exists = await prisma.game.findUnique({
+			where: {
+				roomCode
+			}
+		});
+
+		if (!exists) break;
+	}
 
 	const game = await prisma.game.create({
 		data: {
-			roomCode: roomCode!,
+			roomCode,
 			mode: gameMode,
-			boardSize: boardSize,
-			tieBreaker: tieBreaker,
+			boardSize,
+			tieBreaker,
 			status: 'waiting',
 			currentTurn: 'X',
 			players: {
 				create: {
-					userId: profile ? locals.user.id : null,
+					userId: locals.user.id,
 					symbol: 'X'
 				}
 			}
 		}
 	});
 
-	return json({ roomCode: game.roomCode });
+	return json({
+		roomCode: game.roomCode
+	});
 };

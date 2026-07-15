@@ -6,11 +6,17 @@ export const POST = async ({ locals, request }) => {
 		return json({ error: 'Unauthorized' }, { status: 401 });
 	}
 
+	const user = locals.user;
+
 	const { roomCode } = await request.json();
 
 	const game = await prisma.game.findUnique({
-		where: { roomCode },
-		include: { players: true }
+		where: {
+			roomCode
+		},
+		include: {
+			players: true
+		}
 	});
 
 	if (!game) {
@@ -21,24 +27,33 @@ export const POST = async ({ locals, request }) => {
 		return json({ error: 'Game already full' }, { status: 400 });
 	}
 
-	const alreadyJoined = game.players.find((p) => p.userId === locals.user?.id);
+	const alreadyJoined = game.players.find((player) => player.userId === user.id);
 
 	if (alreadyJoined) {
-		return json({ message: 'Already joined' });
+		return json({
+			message: 'Already joined'
+		});
 	}
 
-	await prisma.gamePlayer.create({
-		data: {
-			gameId: game.id,
-			userId: locals.user.id,
-			symbol: 'O'
-		}
-	});
+	await prisma.$transaction([
+		prisma.gamePlayer.create({
+			data: {
+				gameId: game.id,
+				userId: user.id,
+				symbol: 'O'
+			}
+		}),
+		prisma.game.update({
+			where: {
+				id: game.id
+			},
+			data: {
+				status: 'active'
+			}
+		})
+	]);
 
-	await prisma.game.update({
-		where: { id: game.id },
-		data: { status: 'active' }
+	return json({
+		success: true
 	});
-
-	return json({ success: true });
 };
