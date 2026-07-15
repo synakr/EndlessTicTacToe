@@ -1,5 +1,7 @@
 <script lang="ts">
   import { onMount } from 'svelte';
+  import { redirect } from '@sveltejs/kit';
+  import type { PageServerLoad } from './dashboard/$types';
 
   let scrollY = 0;
   let isDayMode = false;
@@ -24,6 +26,14 @@
       window.removeEventListener('scroll', handleScroll);
     };
   });
+
+  export const load: PageServerLoad = async ({ locals }) => {
+    if (locals.user) {
+      throw redirect(302, '/dashboard');
+    }
+
+    return {};
+  };
 </script>
 
 <style>

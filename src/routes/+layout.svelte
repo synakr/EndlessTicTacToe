@@ -80,17 +80,25 @@
 
 <style>
 	:global(html),
-	:global(body),
+	:global(body) {
+		width: 100%;
+		min-height: 100%;
+		margin: 0;
+	}
+
 	:global(#app) {
 		width: 100%;
-		height: 100%;
-		margin: 0;
+		min-height: 100vh;
+		overflow-x: hidden;
 	}
 
 	.layout {
 		position: relative;
 		min-height: 100vh;
-		overflow: hidden;
+
+		/* only hide horizontal overflow */
+		overflow-x: hidden;
+		overflow-y: visible;
 
 		background:
 			radial-gradient(circle at top, rgba(138, 108, 255, 0.14), transparent 26%),
@@ -100,7 +108,7 @@
 	.content {
 		position: relative;
 		z-index: 3;
-		min-height: 100vh;
+		min-height: inherit;
 	}
 
 	.stars {

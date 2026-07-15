@@ -3,6 +3,7 @@
   import { supabase } from '$lib/supabase.client';
 
   export let data: any;
+  let makingMove = false;
 
   const game = data.game;
 
@@ -59,6 +60,7 @@
 
   $: playerX = getPlayer('X');
   $: playerO = getPlayer('O');
+  $: isMyTurn = game.currentTurn === mySymbol;
 
   let board: string[][] = buildBoard(game?.moves ?? [], boardSize);
   let message = 'Game in progress';
@@ -66,35 +68,55 @@
   let showBackground = false;
 
   async function handleClick(r: number, c: number) {
-    if (data.game.status === 'finished') return;
+    if (makingMove || game.status === 'finished' || !isMyTurn) return;
 
-    const cell = r * boardSize + c;
+    makingMove = true;
 
-    const res = await fetch(`${gameBaseUrl}/move`, {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json'
-      },
-      body: JSON.stringify({ cell })
-    });
+    try {
+      const cell = r * boardSize + c;
+      const previousGame = structuredClone(game);
 
-    const result = await res.json();
-    if (!res.ok) return;
+      board[r][c] = mySymbol;
+      board = [...board];
 
-    applyGameState(result.game);
+      game.moves.push({
+        cell,
+        symbol: mySymbol
+      });
 
-    await channel.send({
-      type: 'broadcast',
-      event: 'move-made',
-      payload: {
-        game: result.game,
-        winner: result.winner ?? null
+      game.currentTurn = mySymbol === 'X' ? 'O' : 'X';
+
+      const res = await fetch(`${gameBaseUrl}/move`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json'
+        },
+        body: JSON.stringify({ cell })
+      });
+
+      const result = await res.json();
+      if (!res.ok) {
+        applyGameState(previousGame);
+        return;
       }
-    });
 
-    if (result.winner) {
-      setWinnerMessage(result.winner);
-      game.status = 'finished';
+      applyGameState(result.game);
+
+      await channel.send({
+        type: 'broadcast',
+        event: 'move-made',
+        payload: {
+          game: result.game,
+          winner: result.winner ?? null
+        }
+      });
+
+      if (result.winner) {
+        setWinnerMessage(result.winner);
+        game.status = 'finished';
+      }
+    } finally {
+      makingMove = false;
     }
   }
 
@@ -303,6 +325,7 @@
 
           <button
             type="button"
+            disabled={!isMyTurn || makingMove || game.status === 'finished' || cell !== ''}
             on:click={() => handleClick(r, c)}
             aria-label={`Cell ${r + 1}, ${c + 1}`}
             class={`
@@ -315,6 +338,10 @@
               transition-all
               duration-200
               active:scale-95
+
+              disabled:cursor-not-allowed
+              disabled:hover:translate-y-0
+              disabled:hover:shadow-none
 
               ${
                 cell === ''
@@ -354,7 +381,6 @@
               }
             `}
           >
-
             <span
               class="relative z-10 text-[clamp(2.5rem,10vmin,5rem)] font-black leading-none text-white transition-transform duration-200 group-hover:scale-105"
             >
@@ -364,7 +390,6 @@
             <span
               class="pointer-events-none absolute inset-0 rounded-2xl bg-[linear-gradient(135deg,rgba(255,255,255,.14),transparent_65%)]"
             ></span>
-
           </button>
 
         {/each}

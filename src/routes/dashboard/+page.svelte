@@ -1,12 +1,13 @@
 <script>
-  import { goto } from "$app/navigation";
+  import { goto, invalidateAll } from "$app/navigation";
   import { supabase } from "$lib/supabase.client";
 
   export let data;
 
   async function handleLogout() {
     await supabase.auth.signOut();
-    await goto("/login");
+    await invalidateAll();
+    await goto('/login');
   }
 
   const profile = data.profile ?? {};
@@ -37,7 +38,7 @@
   <div class="pointer-events-none fixed inset-0 opacity-70 bg-[radial-gradient(circle_at_15%_20%,rgba(255,255,255,0.18)_0,transparent_1px),radial-gradient(circle_at_80%_30%,rgba(255,255,255,0.14)_0,transparent_1px),radial-gradient(circle_at_40%_70%,rgba(255,255,255,0.12)_0,transparent_1px),radial-gradient(circle_at_65%_15%,rgba(120,140,255,0.18),transparent_22%),radial-gradient(circle_at_25%_85%,rgba(93,242,194,0.1),transparent_20%)] bg-[length:320px_320px,420px_420px,280px_280px,auto,auto]"></div>
   <div class="pointer-events-none fixed inset-0 bg-[radial-gradient(circle_at_center,transparent_0_55%,rgba(0,0,0,0.28)_100%)]"></div>
 
-  <main class="relative z-10 mx-auto flex min-h-[100dvh] w-full max-w-6xl flex-col gap-3 overflow-hidden px-3 py-3 sm:px-4 sm:py-4 lg:gap-4">
+  <main class="relative z-10 mx-auto flex min-h-[100dvh] w-full max-w-6xl flex-col gap-3 overflow-y-auto px-3 py-3 pb-12 sm:px-4 sm:py-4 lg:gap-4 max-sm:pb-12">
     <section class="rounded-[2rem] border border-white/15 bg-white/10 p-4 shadow-2xl backdrop-blur-2xl sm:p-5">
       <div class="flex flex-col gap-3 md:flex-row md:items-start md:justify-between">
         <div class="min-w-0">
@@ -188,6 +189,6 @@
   }
 
   :global(body) {
-    overflow: hidden;
+    overflow-x: hidden;
   }
 </style>
