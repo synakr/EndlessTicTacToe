@@ -6,25 +6,20 @@
   let makingMove = false;
 
   const game = data.game;
-
   let channel: any;
+  let channelStatus = 'CONNECTING';
   const boardSize: number = data?.game?.boardSize ?? 3;
   const gameBaseUrl = `/api/game/${game.roomCode}`;
 
   function buildBoard(moves: any[] = [], size: number) {
-    const nextBoard: string[][] = Array.from({ length: size }, () =>
-      Array(size).fill('')
-    );
-
+    const nextBoard: string[][] = Array.from({ length: size }, () => Array(size).fill(''));
     for (const move of moves) {
       const row = Math.floor(move.cell / size);
       const col = move.cell % size;
-
       if (nextBoard[row] && typeof nextBoard[row][col] !== 'undefined') {
-        nextBoard[row][col] = move.symbol;
+        nextBoard[row][col] = move.symbol ?? '';
       }
     }
-
     return nextBoard;
   }
 
@@ -33,9 +28,7 @@
   }
 
   function getPlayerName(player: any, fallback: string) {
-    return `${player?.user?.id === game.currentUserId ? '*' : ''}${
-      player?.user?.username ?? fallback
-    }`;
+    return `${player?.user?.id === game.currentUserId ? '*' : ''}${player?.user?.username ?? fallback}`;
   }
 
   function applyGameState(nextGame: any) {
@@ -43,12 +36,40 @@
     game.status = nextGame.status;
     game.players = nextGame.players;
     game.moves = nextGame.moves ?? [];
+    board = buildBoard(game.moves, boardSize);
+    if (nextGame.status !== 'finished') message = 'Game in progress';
+  }
+
+  // Apply a compact, idempotent move event. It is safe if the sender receives
+  // its own broadcast before the HTTP response arrives.
+  function applyMoveEvent(event: any) {
+    if (!event?.move) return;
+
+    const nextMoves = (game.moves ?? []).filter(
+      (move: any) => !event.removedMoveIds?.includes(move.id)
+    );
+    const existingIndex = nextMoves.findIndex(
+      (move: any) => move.id === event.move.id ||
+        (move.cell === event.move.cell && move.symbol === event.move.symbol)
+    );
+
+    if (existingIndex >= 0) nextMoves[existingIndex] = event.move;
+    else nextMoves.push(event.move);
+
+    game.moves = nextMoves.sort((a: any, b: any) => a.moveNo - b.moveNo);
+    game.currentTurn = event.currentTurn;
+    game.status = event.status;
+
+    if (event.scores) {
+      game.players = game.players.map((player: any) => ({
+        ...player,
+        score: event.scores[player.symbol] ?? player.score
+      }));
+    }
 
     board = buildBoard(game.moves, boardSize);
-
-    if (nextGame.status !== 'finished') {
-      message = 'Game in progress';
-    }
+    if (event.winner) setWinnerMessage(event.winner);
+    else if (event.status !== 'finished') message = 'Game in progress';
   }
 
   function setWinnerMessage(winner: string) {
@@ -64,111 +85,82 @@
 
   let board: string[][] = buildBoard(game?.moves ?? [], boardSize);
   let message = 'Game in progress';
-
   let showBackground = false;
 
   async function handleClick(r: number, c: number) {
-    if (makingMove || game.status === 'finished' || !isMyTurn) return;
+    if (makingMove || game.status === 'finished' || !isMyTurn || board[r][c]) return;
 
     makingMove = true;
+    const cell = r * boardSize + c;
+    const previousGame = structuredClone(game);
+
+    // Optimistic local update: the active player sees the move immediately.
+    board[r][c] = mySymbol;
+    board = [...board];
+    game.moves = [...game.moves, { cell, symbol: mySymbol, moveNo: game.moves.length + 1 }];
+    game.currentTurn = mySymbol === 'X' ? 'O' : 'X';
 
     try {
-      const cell = r * boardSize + c;
-      const previousGame = structuredClone(game);
-
-      board[r][c] = mySymbol;
-      board = [...board];
-
-      game.moves.push({
-        cell,
-        symbol: mySymbol
-      });
-
-      game.currentTurn = mySymbol === 'X' ? 'O' : 'X';
-
       const res = await fetch(`${gameBaseUrl}/move`, {
         method: 'POST',
-        headers: {
-          'Content-Type': 'application/json'
-        },
+        headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ cell })
       });
-
       const result = await res.json();
+
       if (!res.ok) {
         applyGameState(previousGame);
+        message = result.error ?? 'Move failed';
         return;
       }
 
-      applyGameState(result.game);
-
-      await channel.send({
-        type: 'broadcast',
-        event: 'move-made',
-        payload: {
-          game: result.game,
-          winner: result.winner ?? null
-        }
-      });
-
-      if (result.winner) {
-        setWinnerMessage(result.winner);
-        game.status = 'finished';
-      }
+      applyMoveEvent(result.event);
+    } catch (error) {
+      applyGameState(previousGame);
+      message = 'Connection error. Try again.';
+      console.error('[game] Move request failed:', error);
     } finally {
       makingMove = false;
     }
   }
 
   async function restart() {
-    const res = await fetch(`${gameBaseUrl}/restart`, {
-      method: 'POST'
-    });
-
+    const res = await fetch(`${gameBaseUrl}/restart`, { method: 'POST' });
     const result = await res.json();
     if (!res.ok) return;
 
     applyGameState(result.game);
-
-    await channel.send({
-      type: 'broadcast',
-      event: 'game-restarted',
-      payload: {
-        game: result.game
-      }
-    });
-
+    if (channelStatus === 'SUBSCRIBED') {
+      await channel.send({
+        type: 'broadcast',
+        event: 'game-restarted',
+        payload: { game: result.game }
+      });
+    }
     message = 'Game in progress';
   }
 
   onMount(() => {
     channel = supabase.channel(`game-${game.roomCode}`);
 
-    channel.on(
-      'broadcast',
-      { event: 'move-made' },
-      (payload: any) => {
-        applyGameState(payload.payload.game);
+    channel.on('broadcast', { event: 'move-made' }, (message: any) => {
+      applyMoveEvent(message.payload);
+    });
 
-        if (payload.payload.winner) {
-          setWinnerMessage(payload.payload.winner);
-        }
+    channel.on('broadcast', { event: 'game-restarted' }, (broadcast: any) => {
+      applyGameState(broadcast.payload.game);
+      message = 'Game in progress';
+    });
+
+    channel.subscribe((status: string) => {
+      channelStatus = status;
+      if (status === 'CHANNEL_ERROR' || status === 'TIMED_OUT' || status === 'CLOSED') {
+        console.warn(`[realtime] Room ${game.roomCode} subscription status: ${status}`);
       }
-    );
-
-    channel.on(
-      'broadcast',
-      { event: 'game-restarted' },
-      (payload: any) => {
-        applyGameState(payload.payload.game);
-        message = 'Game in progress';
-      }
-    );
-
-    channel.subscribe();
+    });
 
     return () => {
-      supabase.removeChannel(channel);
+      if (channel) supabase.removeChannel(channel);
     };
   });
 </script>
